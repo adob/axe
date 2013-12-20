@@ -1,0 +1,6 @@
+*.ll
+*.s
+*.kate-swp
+deps/
+objs/
+test
