@@ -1,7 +1,20 @@
-#include "error.h"
+#include <string.h>
+#include <ostream>
 
-std::ostream& operator<< (std::ostream& o, error err) {
-    char buf[256];
-    o << strerror_r(err, buf, sizeof buf);
-    return o;
+#include "builtin.h"
+#include "error.h"
+#include "print.h"
+
+std::ostream& operator<< (std::ostream& stream, error err) {
+    if (err.is_errno) {
+            stream << err.charp;
+    } else if (err.is_funcp) {
+        print "!! not implemented!!";
+    } else {
+        stream << strerror_r(err.code, thread_local_buf, sizeof thread_local_buf); 
+        // result may be truncated but strerror_r() guarantees 
+        // it is NUL-terminated
+    }
+
+    return stream;
 }

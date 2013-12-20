@@ -7,8 +7,6 @@
 
 #include "print.h"
 
-namespace alex {
-
 template <size N>
 struct fixedbuf {
     char  data[N];
@@ -51,4 +49,3 @@ struct fixedbuf {
     }
     
 };
-}

@@ -1,19 +1,13 @@
 #pragma once
-#include "datatypes.h"
-#include "buf.h"
+#include "builtin.h"
 
-namespace alex {
 namespace io {
 
-const error ERR_SHORT_WRITE = "short write";
-const error ERR_SHORT_BUFFER = "short buffer";
-const error EOF_ = "EOF";
+    const error ERR_SHORT_WRITE = "short write";
+    const error ERR_SHORT_BUFFER = "short buffer";
 
-struct IReader {
-    virtual size read(buf& p, error& err) = 0;
-};
+    struct IReader {
+        virtual size read(buf& p, error& err) = 0;
+    };
 
-
-
-}
 }

@@ -1,39 +1,21 @@
 #pragma once
-#include "basic.h"
-#include "alex/syscall"
+#include "builtin.h"
 
-namespace alex {
 namespace os {
-
-using error = syscall::error;
     
 struct File {
+    error   err;
     int     fd;
     strbuf  name;
     
     void init(int fd, str name);
-    size read(slice<char> b, error&);
-    size read(slice<char> b);
+    size read(byteref b, error&);
+    size read(byteref b);
     
     ~File() {
         // close();
     }
 };
-
-
-
-//using filemode = mode_t;
-
-// enum errortype {
-//     OK,
-//     PathError,
-//     LinkError
-// };
-
-// struct error {
-//     type        errortype;
-//     err         syscall::error;
-// };
 
 File create(str name,  error& err);
 File create(str name);
@@ -47,5 +29,4 @@ File open(str name, error& err);
 File open(str name);
 error open(str name, File& file);
 
-}
 }
