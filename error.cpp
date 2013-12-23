@@ -7,13 +7,14 @@
 
 std::ostream& operator<< (std::ostream& stream, error err) {
     if (err.is_errno) {
-            stream << err.charp;
+        char buf[1024];
+        stream << strerror_r(err.code, buf, sizeof buf);
+        // result may be truncated but strerror_r() guarantees 
+        // it is NUL-terminated
     } else if (err.is_funcp) {
         print "!! not implemented!!";
     } else {
-        stream << strerror_r(err.code, thread_local_buf, sizeof thread_local_buf); 
-        // result may be truncated but strerror_r() guarantees 
-        // it is NUL-terminated
+        stream << err.charp;
     }
 
     return stream;

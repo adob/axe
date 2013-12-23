@@ -8,44 +8,13 @@
 
 namespace os {
 
-File create(str name, error & err) {
-    File file;
-    err = create(name, file);
-    return file;
-}
-File create(str name) {
-    error err;
-    return create(name, err);
-}
-error create(str name, File& file) {
-    return open_file(name, O_RDWR|O_CREAT|O_TRUNC, 0666, file);
-}
-
-File open_file(str name, int flag, mode_t perm, error& err) {
-    File file;
-    err = open_file(name, flag, perm, file);
-    return file;
-}
-File open_file(str name, int flag, mode_t perm) {
-    error err;
-    return open_file(name, flag, perm, err);
-}
-error open_file(str name, int flag, mode_t perm, File& file) {
-    static_assert(sizeof(thread_local_buf) > PATH_MAX, "buffer too small");
+File create(str name, int flag, mode_t perm) {
+    return open(name, flag, perm);
     
-    if (name.len >= PATH_MAX) {
-        return ENAMETOOLONG;
-    }
-    memcpy(thread_local_buf, name.data, name.len);
-    thread_local_buf[name.len] = '\0';
+}
+File create(const char *name, int flag, mode_t perm) {
+    return open(name, flag, perm);
     
-    int r = ::open(thread_local_buf, flag|O_CLOEXEC, perm);
-    if (r == -1) {
-        file.err = errno;
-        return errno;
-    }
-    file.init(r, name);
-    return OK;
 }
 
 void File::init(int fd, str name) {
@@ -53,33 +22,69 @@ void File::init(int fd, str name) {
     this->fd   = fd;
     this->name = name;
 }
-size File::read(byteref b) {
-    error e;
-    return read(b, e);
-}
-size File::read(byteref b, error& err) {
+
+
+size File::read(bufref b, error& e) {
+    if (this->err == ErrInvalid) {
+        return e=ErrInvalid, 0;
+    } 
     size count = ::read(fd, b.data, b.len);
-    if (count == -1u) {
-        err = errno;
-        return 0;
+    if (count == (size) -1) {
+        return e=errno, 0;
     } else if (count == 0 && b.len > 0) {
-        return 0;
+        return e=eof, 0;
     }
-    return 0;
+    return e=nil, count;
 }
 
-File open(str name, error& err) {
+
+size File::pread_fully(bufref b, size offset, error& e) {
+    if (this->err == ErrInvalid) {
+        err = ErrInvalid;
+        return e=err, 0;
+    } 
+    size n = 0;
+    while (b.len > 0) {
+        size m = ::pread(fd, b.data, b.len, offset);
+        if (m == 0) {
+            err = eof;
+            return e=err, n;
+        } else if (m == (size) -1) {
+            err = errno;
+            return e=err, n;
+        }
+        n += m;
+        b = b.slice(m);
+        offset += m;
+    }
+    err = nil;
+    return e=nil, n;
+}
+
+
+File open(str name, int flag, mode_t perm) {
+    char buf[PATH_MAX];
+    
+    if (name.len >= PATH_MAX) {
+        File file;
+        file.err = ENAMETOOLONG;
+        return file;
+    }
+    memcpy(buf, name.data, name.len);
+    buf[name.len] = '\0';
+    return open(buf, flag, perm);
+}
+File open(const char *name, int flag, mode_t perm) {
     File file;
-    err = open(name, file);
+    int r = ::open(name, flag, perm);
+    if (r == -1) {
+        file.fd  = -1;
+        file.err = errno;
+        return file;
+    }
+    file.init(r, name);
+    file.err = OK;
     return file;
 }
-File open(str name) {
-    error err;
-    return open(name, err);
-}
 
-error open(str name, File& file) {
-    return open_file(name, O_RDONLY, 0, file);
-}
-    
 }

@@ -7,7 +7,7 @@ namespace io {
     const error ERR_SHORT_BUFFER = "short buffer";
 
     struct IReader {
-        virtual size read(buf& p, error& err) = 0;
+        virtual size read(bufref p, error& err) = 0;
     };
 
 }

@@ -1,0 +1,147 @@
+// #include <csignal>
+// #include <execinfo.h>
+// #include <unistd.h>
+//#include <ostream>
+// #include <stdio.h>
+//#include <iostream>
+#include <stdio.h>
+#include <unistd.h>
+#include <functional>
+#include <tuple>
+
+#include "builtin.h"
+#include "func.h"
+#include "include/os"
+
+#include "print.h"
+
+struct MyStruct {
+    int i;
+    const char *s;
+    
+    MyStruct(int i) : i(i) {
+        print "MyStruct created", i, this;
+    }
+    
+    MyStruct(MyStruct const& other) : i(other.i) {
+        print "MyStruct copy constructor", i;
+    }
+    
+    MyStruct(MyStruct&& other) : i(other.i) {
+        print "MyStruct forwarded", i;
+    }
+    
+    void method(int a, int b, int c, int d, int e) {
+        printf("MyStruct::method() called %d %d %d %d %d\n", a, b, c, d, e);
+    }
+    
+    void method2(int n) {
+        printf("MyStruct::method2(%d) called\n", n);
+    }
+    
+    MyStruct& operator=(MyStruct const& other) {
+        i = other.i;
+        print "MyStruct assignment copy", i, this;
+        return *this;
+    }
+    
+    MyStruct& operator=(MyStruct&& other) {
+        i = other.i;
+        print "MyStruct assignment move", i, this;
+        return *this;
+    }
+    
+    ~MyStruct() {
+        print "MyStruct destroyed", i, this;
+    }
+    
+    void fun(int i) {
+        print "MyStruct::fun(%d)" % i;
+    }
+};
+
+MyStruct make_mystruct() {
+    MyStruct ms1(5);
+    ms1.s = "foo";
+    
+    MyStruct ms2(7);
+    ms2.s = "bar";
+    
+    if (time(0) == 7) {
+        return ms1;
+    } else {
+        return ms2;
+    }
+    //return ms1;
+}
+
+void fun1(funcref<void, int> f) {
+    f(8);
+}
+
+
+void foo(int a, int b) {
+    print a, b;
+}
+
+namespace detail
+{
+    template <typename F, typename Tuple, bool Done, int Total, int... N>
+    struct call_impl
+    {
+        static void call(F f, Tuple && t)
+        {
+            call_impl<F, Tuple, Total == 1 + sizeof...(N), Total, N..., sizeof...(N)>::call(f, std::forward<Tuple>(t));
+        }
+    };
+    
+    template <typename F, typename Tuple, int Total, int... N>
+    struct call_impl<F, Tuple, true, Total, N...>
+    {
+        static void call(F f, Tuple && t)
+        {
+            f(std::get<N>(std::forward<Tuple>(t))...);
+        }
+    };
+}
+
+// user invokes this
+template <typename F, typename Tuple>
+void call(F f, Tuple && t)
+{
+    typedef typename std::decay<Tuple>::type ttype;
+    detail::call_impl<F, Tuple, 0 == std::tuple_size<ttype>::value, std::tuple_size<ttype>::value>::call(f, std::forward<Tuple>(t));
+}
+
+template <typename T, typename R, typename... Args>
+struct MethodBinder {
+    using method_t = R (T::*)(Args...);
+    T& t;
+    std::tuple<Args...> args;
+    
+    MethodBinder(T& t, Args... args) : t(t) {
+        this->args = std::make_tuple(args...);
+    }
+    
+    
+    R call(Args... args) {
+        ::call(, args);
+    }
+};
+
+int main() {
+    Holder<int,int> h(1, 2);
+    foo(3, 7);
+    h.call();
+    //MyStruct my_struct = make_mystruct();
+    
+//     fun1([](int i) {
+//         print "called with %d" % i;
+//     });
+//     
+//     MyStruct ms1(1);
+//     
+//     fun1( std::bind(&MyStruct::fun, &ms1, std::placeholders::_1) );
+//     
+    return 0;
+}
