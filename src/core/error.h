@@ -1,5 +1,6 @@
 #pragma once
 #include <iosfwd>
+#include <vector>
 #include <axe/core/typedefs.h>
 
 namespace axe {
@@ -35,7 +36,7 @@ namespace axe {
         constexpr error(ErrType type, int code=0, uint extra=0) : 
                 code(code), type(type), extra(extra) {}
         constexpr error(const char *str) : charp(str) { }
-        constexpr error(nullptr_t) : code(0), type(0), extra(0) {}
+        constexpr error(std::nullptr_t) : code(0), type(0), extra(0) {}
         error(errorfunc f) : funcp(f) {
             type = FuncErr;
         }
@@ -83,4 +84,12 @@ namespace axe {
         
         errorparam& operator = (errorparam const&) = delete;
     } ;
+    
+    struct Exception {
+        std::vector<void*> backtrace;
+        std::string        msg;
+    } ;
+    
+    void raise(str msg);
+    void raise(int errno);
 }

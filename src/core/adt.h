@@ -13,7 +13,11 @@ struct array {
     template <size N> 
     constexpr array(T (&)[N]);
     
-    constexpr const T& operator [] (size i);
+    template <size N> 
+    constexpr array(T (&&)[N]);
+    
+    //constexpr       T& operator [] (size i);
+    constexpr const T& operator [] (size i) const;
 };
 
 template <typename T> size len(array<T> arr);
@@ -57,13 +61,29 @@ constexpr size len(Array<T, N> const& arr);
 
 template <typename T>
 struct Vector {
-    T         *arr;
+    T         *data;
     size       len;
     size       cap;
     Allocator& alloc;
     
     Vector(Allocator& alloc);
+    Vector(size count, Allocator &alloc);
+    
+    operator T* () {
+        return data;
+    }
+    
+    T* begin() {
+        return data;
+    }
+    
+    T* end() {
+        return data+len;
+    }
 } ;
+
+template <typename T>
+size len(Vector<T> const&);
 
 template <typename T, size N>
 struct SmallVector {

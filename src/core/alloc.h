@@ -82,7 +82,12 @@ namespace axe {
         bufref operator () (size n);
         
         template <typename T, typename... Args>
-        T& make(Args&&... args);
+        T* make(Args&&... args);
+        
+        template <typename T, typename... Args>
+        T* make_many(size count, Args&&... args);
+        
+        bufref copy_c_str(const char *charp);
     };
 
     #include "alloc.inlines.h"

@@ -19,7 +19,7 @@ namespace axe {
 
     template <typename Func>
     Deferred<Func> defer(Func&& func) {
-        return Deferred<Func>{std::move(func)};
+        return Deferred<Func>{std::forward<Func>(func)};
     }
 
     esize write(FILE*, str);

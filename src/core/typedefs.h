@@ -20,6 +20,8 @@ namespace axe {
     using uint128 = unsigned __int128;
     using float32 = float;
     using float64 = double;
+    using intptr  = intptr_t;
+    using uintptr = uintptr_t; 
 
     const size npos = (size) -1;
     const decltype(nullptr) nil = nullptr;

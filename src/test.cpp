@@ -6,12 +6,20 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <functional>
 #include <tuple>
 #include <utility>
 #include <array>
 #include <vector>
 #include <chrono>
+#include <thread>
+#include <mutex>
+#include <sched.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <condition_variable>
 
 #include <axe/core.h>
 #include <axe/unicode/utf8.h>
@@ -20,152 +28,166 @@
 #include <axe/net.h>
 #include <axe/time.h>
 #include <axe/print.h>
-
-
-
-
-// struct Foo {
-//     static const int a = 7;
-//     static const int b = 8;
-// };
-// 
-// template <typename T>
-// struct floatinfo { };
-// 
-// template <>
-// struct floatinfo<float> {
-//     static const uint mantbits = 23;
-//     static const uint expbits  = 8;
-//     static const  int bias     = -127;
-//     
-//     typedef uint32 manttype;
-// };
-// 
-// template <>
-// struct floatinfo<double> {
-//     static const uint mantbits = 52;
-//     static const uint expbits  = 11;
-//     static const  int bias     = -1023;
-//     
-//     typedef uint64 manttype;
-// };
-// 
-// str ffloat(Allocator& alloc, double f) {
-//     uint64 bits = f;
-//     const uint mantbits = floatinfo<double>::mantbits;
-//     const uint expbits  = floatinfo<double>::expbits;
-//     const int  bias     = floatinfo<double>::bias;
-//     using manttype      = floatinfo<double>::manttype;
-//     
-//     
-//     bool     neg  = bits >> (expbits + mantbits);
-//     int      exp  = bits >> mantbits & ((1 << expbits) - 1);
-//     manttype mant = bits & ((((manttype)1) << mantbits) - 1);
-//     
-//     switch (exp) {
-//         case (1 << expbits) - 1:
-//             if (mant != 0) return "NaN";
-//             if (neg)       return "-Inf";
-//                            return "+Inf";
-//         case 0:
-//             // denormalized
-//             exp++;
-//         default:
-//             // add implicit bias
-//             mant |= ((manttype)1) << mantbits;
-//     }
-//     exp += bias;
-//     
-//     print fmt::sprintf(alloc, "%b", 8);
-//     return "";
-// }
-
-
-
-// void foo(int i, errorparam e = {}) {
-//     
-// }
-// 
-// struct S {
-//     size width;
-//     union {
-//         uint32 flags = 0;
-//         struct {
-//             bool upcase     : 1;
-//             bool plus       : 1;
-//             bool minus      : 1;
-//             bool zero       : 1;
-//             bool sharp      : 1;
-//             bool space      : 1;
-//             bool comma      : 1;
-//             bool apos       : 1;
-//             bool prec_present : 1;
-//         } ;
-//     } ;
-// } ;
-// 
-// struct S2 {
-//    char data[128];
-// } ;
-// 
-// void printdiff(timespec const& t1, timespec const& t2) {
-//     int64 time = (t2.tv_sec - t1.tv_sec) * 1000000000;
-//     time += t2.tv_nsec - t1.tv_nsec;
-//     
-//     print time;
-// }
-// 
-// using int128 = __int128;
-// 
-// struct Time {
-//     int128 nsecs;
-// } ;
-// 
-// Time monotime() {
-//     timespec ts;
-//     clock_gettime(CLOCK_MONOTONIC, &ts);
-//     return Time{ts.tv_sec * 1000000000  + ts.tv_nsec};
-//     
-//     Time::Now()
-//     
-//     Fmt::Sprintf()
-//     
-// }
-// 
-// int128 operator - (Time t1, Time t2) {
-//     return t1.nsecs - t2.nsecs;
-// }
-
-struct S1 {
-    char buf[100];
-};
-
+#include <axe/csp.h>
+#include <axe/debug.h>
 
 using namespace axe;
+
+void workfun(int i) {
+    print "work(%d) start" % i, std::time(0);
+    
+//     int128 now = time::monotonic();
+//     int128 end = now + 5 * std::nano::den;
+//     
+//     while (now < end) {
+//         now = time::monotonic();
+//     }
+    
+    void (*func)() = nullptr;
+    //func();
+    sleep(4);
+    //print a;
+    print "work(%d) end" % i, std::time(0);
+    throw "foo";
+}
+
+// struct MyStruct {
+//     char buf[4] = { 'x', 'y', 'z', '!' };
+//     
+//     std::function<char&(bool&)> generator() {
+//         char * cur = buf+0;
+//         char * end = buf+sizeof(buf);
+//         return [=](bool& valid) mutable -> char& {
+//             if (cur >= end)
+//                 return valid=false, * (char*) 0;
+// 
+//             return valid=true, *(cur++);
+//         };
+//     }
+// } ;
+// 
+// int ints[] = { 1, 2, 3 };
+// 
+// #include <type_traits>
+// 
+// template <typename T>
+// struct Iterator {
+//     using GeneratorType  = decltype( std::declval<T>().generator() );
+//     using ResultType = decltype( std::declval<GeneratorType>()( std::declval<bool&>() ) );
+//     
+//     
+//     GeneratorType gen;
+//     ResultType curr;
+//     
+//     
+//     bool valid;
+//     
+//     Iterator(T & t) : gen(t.generator()), curr(gen(valid)) {}
+//     
+//     //Iterator() : blank1(true), blank2(true) {}
+//     
+//     ResultType operator * () {
+//         return curr;
+//     }
+//     
+//     void operator ++ () {
+//         curr = gen(valid);
+//     }
+//     
+//     bool operator != (Iterator<T> const&) {
+//         return valid;
+//     }
+//     
+//     Iterator(const Iterator<T>& other) = delete;
+//     ~Iterator() {
+//         print "destructor", this;
+//     }
+// } ;
+
+// int foo() {
+//     return 3;
+// }
+// 
+// struct Foo {
+//     int operator() () { return 3; }
+// } ;
+// 
+// template <typename T>
+// Iterator<T> begin(T & t) {
+//     return Iterator<T>(t);
+// }
+// 
+// template <typename T>
+// Iterator<T>& end(T &) {
+//     return * (Iterator<T>*) 0;
+//     //return Iterator<T>();
+// }
+
+// #include <signal.h>
+// #include <stdio.h>
+// 
+// int *a;
+// 
+// class FoobarException
+// {
+//     int thingy;
+// };
+// 
+// void signal_handler(int signum, siginfo_t *info, void *)
+// {
+//     print "got exception";
+//     FoobarException *f = new FoobarException;
+//     throw f;
+// }
+// 
+// int main()
+// {
+//     struct sigaction act;
+//     
+//     act.sa_sigaction = signal_handler;
+//     sigemptyset (&act.sa_mask);
+//     act.sa_flags = SA_SIGINFO;
+//     sigaction (11, &act, NULL);
+//     
+//     try
+//     {
+//         //void (*func)() = nullptr;
+//         const char *str = 0;
+//         char c = *str;
+//         //printf("%d\n", *a);
+//     }
+//     catch (FoobarException *f)
+//     {
+//         printf("Hello!\n");
+//     }
+// }
+
 int main() {
+    debug::init();
+    //csp::init();
+    //MyStruct ms;
     
-    std::vector<S1> vec;
-    int count = 1000000;
-    
-    int128 start = time::monotonic();
-    for (int i = 0; i < count; i++) {
-        S1 s1;
-        s1.buf[0] = 'a';
-        vec.push_back(s1);
+    try {
+        //void (*func)() = nullptr;
+        //func();
+        //int i = strlen(nullptr);
+        //int i = 3/0;
+        const char * s = 0;
+        char c = *s;
+        print c;
+    } catch (...) {
+        print "got exception";
     }
-    int128 end   = time::monotonic();
-   
-    fmt::printf("%,d ns\n", end-start);
     
-    Allocator alloc(512);
-    List<S1> list(alloc);
-    start = time::monotonic();
-    for (int i = 0; i < count; i++) {
-        S1& s1 = *list.make();
-        s1.buf[0] = 'a';
-    }
-    end   = time::monotonic();
     
-    fmt::printf("%,d ns\n", end-start);
+    print "hello";
+//     csp::go([]{
+//         workfun(7);
+//     });
+    
+    print "goodbye";
+    
+    sleep(500);
+    
     return 0;
 }

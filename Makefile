@@ -1,6 +1,6 @@
 CC     = g++-4.8
 CCCOLOR = colorgcc
-CFLAGS = -Wno-parentheses -std=c++1y -Wall -Wextra -Wno-sign-compare -O3  
+CFLAGS = -Wno-parentheses -std=c++1y -Wall -Wextra -Wno-sign-compare -g -fnon-call-exceptions
 DEFINES = -DMY_SYMBOL
 INCPATH = -iquote src -Iinclude
 
@@ -23,7 +23,7 @@ OBJS = $(patsubst %,$(OBJDIR)/%,$(OTMP))
 DEPS = $(patsubst %.o,$(DEPDIR)/%.d,$(OTMP))
 
 all: init $(OBJS)
-	$(CC) -o test $(OBJS) -lrt
+	$(CC) -o test $(OBJS) -lrt -g -ldwarf -lelf -fnon-call-exceptions
 
 init:
 	mkdir -p $(DEPDIR)

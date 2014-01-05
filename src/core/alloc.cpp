@@ -6,7 +6,7 @@
 using namespace axe;
 
 namespace {
-    constexpr byte* align(byte *d, size a) { return (byte*) (((size)(d + a - 1)) & ~(a - 1)); }
+    byte* align(byte *d, size a) { return (byte*) (((size)(d + a - 1)) & ~(a - 1)); }
     constexpr size  align(size  d, size a) { return                 (d + a - 1)  & ~(a - 1); }
 }
 
@@ -19,6 +19,7 @@ const unsigned MaxFail           = 4;
 const unsigned MaxLargeAllocFail = 3;
 
 Region::Region(uint16 blocksize) {
+    //print "Region::Region(%d)" % blocksize, this;
     this->blocksize              = blocksize;
     uint16 usable_size           = blocksize - align(offsetof(BlockHeader, data), 16);
     this->max_alloc_size         = std::min(usable_size, MaxAllocSize);
@@ -171,7 +172,7 @@ void *Region::alloc_large(size allocsize, unsigned alignment) {
 }
 
 void Region::destroy() {
-    //print "Region::destroy()";
+    //print "Region::destroy()", this;
     LargeAllocHeader *l = large_alloc_list;
     while (l) {
         //print "freed large %x" % l;
@@ -216,5 +217,14 @@ Allocator::Allocator(size sz) : region(sz) {
 
 bufref Allocator::operator () (size n) {
     return bufref((char*)region.alloc(n, 1), n);
+}
+
+bufref Allocator::copy_c_str(const char *charp) {
+    if (!charp)
+        return bufref();
+    
+    bufref b = (*this)(strlen(charp));
+    memcpy(b.data, charp, b.len);
+    return b;
 }
 } // namespace axe 

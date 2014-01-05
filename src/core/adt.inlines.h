@@ -16,11 +16,29 @@ constexpr array<T>::array(T (&arr)[N])
     // empty
 }
 
-template <typename T>
-constexpr const T& array<T>::operator [] (size i) {
-    return assert(i < len),
-           arr[i];
+template <typename T> 
+template <size N>
+constexpr array<T>::array(T (&&arr)[N])
+  : arr(arr)
+  , len(N)
+{
+    // empty
 }
+
+
+// template <typename T>
+// constexpr T& array<T>::operator [] (size i) {
+//     return assert(i < len),
+//            arr[i];
+// }
+
+
+template <typename T>
+constexpr const T& array<T>::operator [] (size i) const {
+    return assert(i < len),
+    arr[i];
+}
+
 
 template <typename T>
 size len(array<T> arr) {
@@ -36,11 +54,24 @@ constexpr size len(Array<T, N> const&) {
 // Vector //
 template <typename T>
 Vector<T>::Vector(Allocator& alloc) 
-  : len(0)
+  : data(nullptr)
+  , len(0)
   , cap(0)
   , alloc(alloc) 
 {
     // empty
+}
+template <typename T>
+Vector<T>::Vector(size count, Allocator& alloc) 
+: len(count)
+, cap(count)
+, alloc(alloc) 
+{
+    data = alloc.make_many<T>(count);
+}
+template <typename T>
+size len(Vector<T> const& vec) {
+    return vec.len;
 }
 
 // SmallVector //
@@ -71,7 +102,7 @@ List<T>::operator list<T> () {
 template <typename T>
 template <typename... Args>
 T* List<T>::make(Args&&... args) {
-    typename list<T>::Node *node = &alloc.make<typename list<T>::Node>(std::forward<Args>(args)...);
+    typename list<T>::Node *node = alloc.make<typename list<T>::Node>(std::forward<Args>(args)...);
     node->next = nullptr;
     
     if (tail) {

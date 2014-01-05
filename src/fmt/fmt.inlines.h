@@ -66,16 +66,20 @@ namespace internal {
             
             size i = sizeof buf;
             size ncount = 0;
-            while (n > 0) {
-                ncount++;
-                if (sep && (ncount % nsep) == 0) {
-                    buf[--i] = sep;
+            if (n == 0)
+                buf[--i] = '0';
+            else {
+                do {
                     ncount++;
-                }
-                buf[--i] = digits[n % base];
-                n /= base;
+                    if (sep && (ncount % nsep) == 0) {
+                        buf[--i] = sep;
+                        ncount++;
+                    }
+                    buf[--i] = digits[n % base];
+                    n /= base;
+                } while (n > 0);
             }
-            
+                
             size pad_prec = prec > ncount ? prec - ncount : 0;
             size sharp_extra = !sharp ? 0
                                     : (base == 16 || base == 2) ? 2
@@ -118,7 +122,15 @@ namespace internal {
             write_integer(n);
         }
         
-        void write (long unsigned n) {
+        void write(long unsigned n) {
+            write_integer(n);
+        }
+        
+        void write(long long n) {
+            write_integer(n);
+        }
+        
+        void write(long long unsigned n) {
             write_integer(n);
         }
         
@@ -151,6 +163,15 @@ namespace internal {
         
         void write(const char *charp) {
             write(str(charp));
+        }
+        
+        void write(std::string const& s) {
+            write(str(s));
+        }
+        
+        template <typename T>
+        void write(T const&) {
+            write("???");
         }
         
     } ;
@@ -330,7 +351,7 @@ template <typename... Args>
 std::string sprintf(str format, Args... args) {
     Allocator alloc;
     str s = internal::sprintf(alloc, format, args...);
-    return s;
+    return (std::string) s;
 }
 
 //     template <typename T>

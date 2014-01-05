@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include "print.h"
+#include <axe/debug.h>
 
 namespace axe {
 
@@ -23,5 +24,14 @@ std::ostream& operator<< (std::ostream& stream, error err) {
     }
 
     return stream;
+}
+
+void raise(str msg) {
+    Exception ex { debug::backtrace(2), (std::string) msg };
+    throw ex;
+}
+
+void raise(int err) {
+    Exception ex { debug::backtrace(2), std::string(strerror(err)) };
 }
 }

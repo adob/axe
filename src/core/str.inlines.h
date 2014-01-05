@@ -11,7 +11,7 @@ constexpr size  len(bufref b)               { return b.len; }
 
 constexpr strref::strref() : data(nullptr), len(0) {}
 //constexpr strref::strref(const bufref b) : data(b.data), len(b.len) {}
-constexpr strref::strref(nullptr_t) : data(nullptr), len(0) {}
+constexpr strref::strref(std::nullptr_t) : data(nullptr), len(0) {}
 constexpr strref::strref(const char *str, size strlen) : data(str), len(strlen) {}
 template <size N> constexpr strref::strref(const char (&str)[N]) : data(str), len(N-1){}
 template <size N> constexpr strref::strref(const uint8 (&bytes)[N]) : data((char*)bytes), len(N) { }
@@ -55,10 +55,10 @@ constexpr bool operator != (strref left, strref right) {
 }
 
 
-constexpr bool operator == (strref left, nullptr_t) {
+constexpr bool operator == (strref left, std::nullptr_t) {
     return left.data == nullptr;
 }
-constexpr bool operator == (nullptr_t, strref right) {
+constexpr bool operator == (std::nullptr_t, strref right) {
     return right.data == nullptr;
 }
 

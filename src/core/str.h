@@ -31,7 +31,7 @@ namespace axe {
         explicit operator bool () {
             return data != nullptr;
         }
-        operator std::string () {
+        explicit operator std::string () {
             return std::string((char*)data, len);
         }
         constexpr operator strref const ();
@@ -50,21 +50,29 @@ namespace axe {
     constexpr char *end(bufref b);
     constexpr size  len(bufref b);
 
+
+    struct TempCStr;
+    
+    #ifdef __clang__
+    constexpr size len(const char *s) {
+        return s[0] == '\0' ? 0 : 1 + len(s+1);
+    }
+    #else
     constexpr size len(const char *s) {
         //return s[0] == '\0' ? 0 : 1 + len(s+1);
         return __builtin_strlen(s);
     }
-
-    struct TempCStr;
+    #endif
 
     struct strref {
         const char * data;
         size         len;
         
         constexpr strref();
-        constexpr strref(const char *str) : data(str), len(__builtin_strlen(str)) {}
+        constexpr strref(const char *str) : data(str), len(axe::len(str)) {}
+        explicit strref(std::string const& s) : data(s.data()), len(s.size()) {}
         //constexpr strref(const bufref b);
-        constexpr strref(nullptr_t);
+        constexpr strref(std::nullptr_t);
         constexpr strref(const char *str, size strlen);
         template <size N> constexpr strref(const char (&str)[N]);
         template <size N> constexpr strref(const uint8 (&bytes)[N]);
@@ -76,7 +84,7 @@ namespace axe {
         
         constexpr char operator [] (size i) const;
         explicit operator bool ();
-        operator std::string () {
+        explicit operator std::string () {
             return std::string(data, len);
         }
         constexpr strref operator() (size i, size j) const;
@@ -89,8 +97,8 @@ namespace axe {
     std::ostream&  operator << (std::ostream & o, const strref str);
     constexpr bool operator == (strref left, strref right);
     constexpr bool operator != (strref left, strref right);
-    constexpr bool operator == (strref left, nullptr_t);
-    constexpr bool operator == (nullptr_t, strref right);
+    constexpr bool operator == (strref left, std::nullptr_t);
+    constexpr bool operator == (std::nullptr_t, strref right);
 
     size copy(bufref dst, strref src);
 
@@ -129,7 +137,7 @@ namespace axe {
         template <typename T>
         Buf& operator += (T const& s);
         
-        operator std::string () {
+        explicit operator std::string () {
             return std::string((char*) buf.data, len);
         }
         
