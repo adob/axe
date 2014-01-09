@@ -3,8 +3,8 @@
 #include <netdb.h>
 #include <errno.h>
 
-#include "net.h"
-#include "fmt.h"
+#import <axe/net.h>
+#import <axe/fmt.h>
 
 namespace axe {
 namespace net {

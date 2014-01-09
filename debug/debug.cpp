@@ -5,7 +5,7 @@
 #include <signal.h>
 
 #include <axe/fmt.h>
-#include "debug.h"
+#include <axe/debug.h>
 
 extern "C" {
     char*

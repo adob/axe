@@ -203,7 +203,7 @@ bool wait(Guard *guard, Chan<T>& chan) {
     if (curr.next)
         curr.next->prev = curr.prev;
     
-    return true;,
+    return true;
 }
 
 template <typename T, typename... Args>

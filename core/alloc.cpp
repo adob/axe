@@ -1,6 +1,6 @@
 #include <malloc.h>
 
-#include "core.h"
+#include <axe/core.h>
 #include "alloc.h"
 
 using namespace axe;

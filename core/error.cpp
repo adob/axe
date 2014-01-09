@@ -2,8 +2,8 @@
 #include <ostream>
 #include <netdb.h>
 
-#include "core.h"
-#include "print.h"
+#include <axe/core.h>
+#include <axe/print.h>
 #include <axe/debug.h>
 
 namespace axe {

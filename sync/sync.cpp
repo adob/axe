@@ -4,10 +4,9 @@
 #include <stdlib.h>
 #include <vector>
 
-#include <axe/fmt.h>
-#include <axe/debug.h>
-
-#include "sync.h"
+#import <axe/fmt.h>
+#import <axe/debug.h>
+#import <axe/sync.h>
 
 namespace axe { namespace sync {
 
