@@ -38,13 +38,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <cxxabi.h>
+//#include <cxxabi.h>
+#include <errno.h>
 
 
 #include <axe/debug.h>
 #include <axe/fmt.h>
 
 //#include "_elftc.h"
+
+extern "C" {
+    char*
+    __cxa_demangle(const char* __mangled_name, char* __output_buffer,
+                   size_t* __length, int* __status);
+    
+    std::type_info*
+    __cxa_current_exception_type();
+    
+}
 
 namespace axe {
 namespace {
@@ -330,7 +341,7 @@ out:
         info.funcname   = "??";
     } else {
         info.symbolname = funcname;
-        char *demangled = abi::__cxa_demangle(funcname, nullptr, 0,  &ret);
+        char *demangled = __cxa_demangle(funcname, nullptr, 0,  &ret);
         if (demangled)
             info.funcname   = demangled;
         else

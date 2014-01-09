@@ -43,10 +43,10 @@ rune decode_rune(str s, int& runesize, bool& isshort) {
     }
     
     // need first continuation byte
-    if (n < 3) {
+    if (n < 2) {
         return runesize=1, isshort=true, RuneError;
     }
-    byte c1 = s[1];
+    byte c1 = s[1];;
     if (c1 < TX || T2 <= c1) {
         return runesize=1, isshort=false, RuneError;
     }
@@ -110,34 +110,33 @@ rune decode(str s, int& nbytes) {
     return internal::decode_rune(s, nbytes, isshort);
 }
 
-int encode(bufref b, rune r) {
+str encode(rune r, bufref b) {
     if (r <= Rune1Max) {
         b[0] = r;
-        return 1;
+        return b(0, 1);
     } else if (r <= Rune2Max) {
         b[0] = T2 | (r >> 6);
         b[1] = TX | (r & MaskX);
-        return 2;
+        return b(0, 2);
     } else if (r > MaxRune || (SurrogateMin <= r && r <= SurrogateMax)) {
         r = RuneError;
     } else if (r < Rune3Max) {
         b[0] = T3 | (r >> 12);
         b[1] = TX | ((r >> 6) & MaskX);
         b[2] = TX | (r & MaskX);
-        return 3;
+        return b(0, 3);
     }
     
     b[0] = T4 | (r >> 18);
     b[1] = TX | ((r >> 12) & MaskX);
     b[2] = TX | ((r >> 6) & MaskX);
     b[3] = TX | (r & MaskX);
-    return 4;
+    return b(0, 4);
 }
 
 str encode(rune r, Allocator& alloc) {
     bufref b = alloc(UTFMax);
-    int nbytes = encode(b, r);
-    return b(0, nbytes);
+    return encode(r, b);
 }
 
 

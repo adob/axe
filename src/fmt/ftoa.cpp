@@ -1,7 +1,7 @@
 #include "core.h"
 
 
-namespace axe {
+namespace axe { namespace fmt {
 
 str format_float(Allocator& alloc, double f, str mft, int prec, int bitsize) {
     uint64 bits = f;
@@ -58,4 +58,4 @@ str format_float(Allocator& alloc, double f, str mft, int prec, int bitsize) {
 
 
 
-}
+}}

@@ -27,10 +27,11 @@ template <typename T, size N>
 struct Array {
     T data[N];
     
-    Array() = default;
-    Array(const T (&arr)[N]) {
-        memcpy(data, arr, N * sizeof(T));
-    }
+//     Array() = default;
+//     Array(const T (&arr)[N]) {
+//         memcpy(data, arr, N * sizeof(T));
+//     }
+    //Array(std::initializer_list<T>) = default;
     
     Array<T, N>& operator = (const T (&arr)[N]) {
         memcpy(data, arr, N * sizeof(T));

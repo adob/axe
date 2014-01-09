@@ -53,23 +53,23 @@ namespace axe {
 
     struct TempCStr;
     
-    #ifdef __clang__
-    constexpr size len(const char *s) {
-        return s[0] == '\0' ? 0 : 1 + len(s+1);
-    }
-    #else
-    constexpr size len(const char *s) {
-        //return s[0] == '\0' ? 0 : 1 + len(s+1);
-        return __builtin_strlen(s);
-    }
-    #endif
+    //#ifdef __clang__
+    //constexpr size len(const char *s) {
+    //    return s[0] == '\0' ? 0 : 1 + len(s+1);
+    //}
+    //#else
+    //constexpr size len(const char *s) {
+    //    //return s[0] == '\0' ? 0 : 1 + len(s+1);
+    //    return __builtin_strlen(s);
+    //}
+    //#endif
 
     struct strref {
         const char * data;
         size         len;
         
         constexpr strref();
-        constexpr strref(const char *str) : data(str), len(axe::len(str)) {}
+        constexpr strref(const char *s) : data(s), len(__builtin_strlen(s)) {}
         explicit strref(std::string const& s) : data(s.data()), len(s.size()) {}
         //constexpr strref(const bufref b);
         constexpr strref(std::nullptr_t);

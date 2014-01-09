@@ -1,6 +1,6 @@
 #include "isprint.h"
 namespace axe {
-namespace strconv {
+namespace fmt {
     
     const array<uint16> IsPrint16 = (uint16[]) {
         0x0020, 0x007e,

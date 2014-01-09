@@ -1,12 +1,21 @@
 #include <execinfo.h>
 #include <exception>
-#include <cxxabi.h>
 #include <iostream>
 #include <unistd.h>
 #include <signal.h>
 
 #include <axe/fmt.h>
 #include "debug.h"
+
+extern "C" {
+    char*
+    __cxa_demangle(const char* __mangled_name, char* __output_buffer,
+                   size_t* __length, int* __status);
+    
+    std::type_info*
+    __cxa_current_exception_type();
+    
+}
 
 namespace axe { namespace debug {
 
@@ -19,6 +28,8 @@ void print_backtrace(int offset) {
 
 void print_backtrace(std::vector<void*> backtrace) {
     Allocator alloc;
+    flockfile(stdout);
+    auto unnlock_stdout = defer([]{ funlockfile(stdout); });
     
     for (void *ptr : backtrace) {
         LineInfo info = debug::addr2line(ptr);
@@ -45,8 +56,12 @@ void crash_handler() {
     } catch (error e) {
         fmt::printf(" error: ");
         print e;
+    } catch (Exception e) {
+        fmt::printf(" exception: %s\n", e.msg);
+        print_backtrace(e.backtrace);
+        return;
     } catch (...) {
-        std::type_info *t = abi::__cxa_current_exception_type();
+        std::type_info *t = __cxa_current_exception_type();
         std::string type = demangle(t->name());
         fmt::printf(" exception of type %s.\n", str(type));
         
@@ -105,7 +120,7 @@ void init() {
 
 std::string demangle(str mangled) {
     int status;
-    char *charp = abi::__cxa_demangle(mangled.tmp_c_str(), 0, 0, &status);
+    char *charp = __cxa_demangle(mangled.tmp_c_str(), 0, 0, &status);
     
     if (status != 0)
         return (std::string) mangled;

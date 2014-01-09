@@ -1,7 +1,7 @@
 #include "strconv.h"
 
 namespace axe {
-namespace strconv {
+namespace fmt {
     
     extern const array<uint16> IsPrint16;
     extern const array<uint16> IsNotPrint16;

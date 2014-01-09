@@ -91,5 +91,5 @@ namespace axe {
     } ;
     
     void raise(str msg);
-    void raise(int errno);
+    void raise(int errno_);
 }

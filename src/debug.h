@@ -15,7 +15,7 @@ namespace debug {
     LineInfo addr2line(void* addr, errorparam err = {});
     std::string demangle(str);
     void crash_handler();
-    void print_backtrace(int offset);
+    void print_backtrace(int offset=0);
     void print_backtrace(std::vector<void*> backtrace);
     std::vector<void*> backtrace(int offset=0);
     

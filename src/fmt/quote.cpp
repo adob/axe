@@ -1,9 +1,9 @@
-#include "strconv.h"
+#include "fmt.h"
 #include "isprint.h"
 #include "unicode/utf8.h"
 
 namespace axe {
-namespace strconv {
+namespace fmt {
 
 constexpr str lowerhex("0123456789abcdef");
     
@@ -13,10 +13,10 @@ str quote_with(str s, char quote, bool ascii_only , Allocator& alloc) {
     for (int width = 0; len(s) > 0; s = s(width)) {
         byte b = s[0];
         rune r = b;
-        width = 1;
+        width = 1; 
         if (r >= utf8::RuneSelf) {
             r = utf8::decode(s, width);
-        }
+        } ;
         if (width == 1 && r == utf8::RuneError) {
             buf.append("\\x", lowerhex[b>>4] , lowerhex[b&0xF]);
             continue;
@@ -26,11 +26,11 @@ str quote_with(str s, char quote, bool ascii_only , Allocator& alloc) {
             continue;
         }
         if (ascii_only) {
-            if (r < utf8::RuneSelf && is_print(r)) {
+            if (r < utf8::RuneSelf && is_printable(r)) {
                 buf.append((char) r);
                 continue;
             }
-        } else if (is_print(r)) {
+        } else if (is_printable(r)) {
             buf.append(r);
             continue;
         }
@@ -78,25 +78,21 @@ size bsearch(array<T> a, uint32 x) {
     return i;
 }
 
-str quote(str s, Allocator& alloc) {
-    return quote_with(s, '"', false, alloc);
+str quote(str s, Allocator& alloc, bool ascii_only) {
+    return quote_with(s, '"', ascii_only, alloc);
 }
 
-str quote_to_ascii(str s, Allocator& alloc) {
-    return quote_with(s, '"', true, alloc);
+str quote(rune r, Allocator& alloc, bool ascii_only) {
+    Array<char, utf8::UTFMax> buf;
+    return quote_with(utf8::encode(r, buf), '\'', ascii_only, alloc);
 }
 
-str quote_rune(rune r, Allocator& alloc) {
-    // TODO: avoid the allocation here.
-    return quote_with(utf8::encode(r, alloc), '\'', false, alloc);
+str quote(char c, Allocator& alloc, bool ascii_only) {
+    Array<char, 1> buf {c};
+    return quote_with(buf, '\'', ascii_only, alloc);
 }
 
-str quote_rune_to_ascii(rune r, Allocator& alloc) {
-    // TODO: avoid the allocation here.
-    return quote_with(utf8::encode(r, alloc), '\'', false, alloc);
-}
-
-bool is_print(rune r) {
+bool is_printable(rune r) {
     // Fast check for Latin-1
     if (r <= 0xFF) {
         if (0x20 <= r && r <= 0x7E) {

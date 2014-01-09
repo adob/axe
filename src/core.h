@@ -34,4 +34,16 @@ namespace axe {
     inline esize write(Writer& writer, str s) {
         return writer(s);
     }
+    
+    template <typename T, size N>
+    size len(T (&)[N]) {
+        return N;
+    }
+    
+    template <typename T>
+    size len(T const& t) {
+        return t.size();
+    }
+    
+    
 }

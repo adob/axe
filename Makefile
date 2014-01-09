@@ -1,6 +1,6 @@
 CC     = g++-4.8
 CCCOLOR = colorgcc
-CFLAGS = -Wno-parentheses -std=c++1y -Wall -Wextra -Wno-sign-compare -g -fnon-call-exceptions
+CFLAGS = -Wno-parentheses -std=c++1y -Wall -Wextra -Wno-sign-compare -g -O0 -fnon-call-exceptions
 DEFINES = -DMY_SYMBOL
 INCPATH = -iquote src -Iinclude
 

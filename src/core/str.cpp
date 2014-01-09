@@ -1,9 +1,10 @@
 #include <ostream>
+#include <iostream>
 #include <string.h>
 #include "str.h"
 #include "unicode/utf8.h"
 
-#include "print.h"
+//#include "print.h"
 
 namespace axe {
 
@@ -83,8 +84,7 @@ void Buf::append(byte b) {
 
 void Buf::append(rune r) {
     ensure(utf8::UTFMax);
-    int nbytes = utf8::encode(buf(len), r);
-    len += nbytes;
+    len += axe::len(utf8::encode(r, buf(len)));
 }
 
 void Buf::append_many(str s, size count) {
@@ -107,10 +107,10 @@ void Buf::append_many(byte c, size count) {
 
 void Buf::append_many(rune r, size count) {
     Array<char, utf8::UTFMax> minibuf;
-    int nbytes = utf8::encode(minibuf, r);
+    str out = utf8::encode(r, minibuf);
     for (size i = 0; i < count; i++) {
-        memcpy(buf.data + len, minibuf.data, nbytes);
-        len += nbytes;
+        memcpy(buf.data + len, out.data, out.len);
+        len += out.len;
     }
 }
 

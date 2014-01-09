@@ -14,7 +14,7 @@ namespace utf8 {
     // out of range, or is not the shortest possible UTF-8 encoding for the
     // value. No other validation is performed.
     rune decode(str s, int& nbytes);
-    int encode(bufref b, rune r);
+    str encode(rune r, bufref b);
     str encode(rune r, Allocator& alloc);
     
     size count(str s);
