@@ -14,6 +14,7 @@ namespace axe {
     using Str        = struct Buf;
 
     using byteref    = struct bufref;
+    using buf        = struct bufref;
 
     struct bufref {
         byte * data;

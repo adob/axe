@@ -1,6 +1,5 @@
 #pragma once
 #include <axe/core/typedefs.h>
-#include <axe/print.h>
 
 namespace axe {
 
@@ -55,12 +54,12 @@ namespace axe {
         AllocatorRef(memory::Region& region) : region(region) {}
         
         T *allocate(size n) {
-            print "allocate(%d)" % n;
+            //print "allocate(%d)" % n;
             return (T*) region.alloc(n * sizeof(T), alignof(T));
         }
         
         bool deallocate(void *ptr, size n) {
-            print "deallocate(%x, %d)" % ptr, n;
+            //print "deallocate(%x, %d)" % ptr, n;
             return region.free(ptr);
         }
     };

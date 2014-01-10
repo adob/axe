@@ -97,27 +97,35 @@ struct SmallVector {
     SmallVector(Allocator& alloc);
 } ;
 
+template <typename>
+struct Node;
 
+template <>
+struct Node<void> {
+    Node<void> *next;
+} ;
+
+template <typename T>
+struct Node : Node<void> {
+    T     data;
+} ;
 
 template <typename T>
 struct list {
-    struct Node {
-        T     data;
-        Node *next;
-    } ;
     
-    Node *head;
+    Node<void> *head;
+    size        len;
     
     struct Iterator {
-        Node *curr;
+        Node<void> *curr;
         
-        T&   operator *  () { return curr->data; }
+        T&   operator *  () { return ((Node<T>*) curr)->data; }
         void operator ++ () { curr = curr->next; }
         bool operator != (Iterator other) { return curr != other.curr; }
     } ;
     
-    list()           : head(nullptr) {}
-    list(Node *head) : head(head)    {}
+    list()                 : head(nullptr), len(0) {}
+    list(Node<void> *head, size len) : head(head), len(len)    {}
     
     Iterator begin() {
         return Iterator{head};
@@ -126,18 +134,39 @@ struct list {
     Iterator end() {
         return Iterator{nullptr};
     }
+    
+    T& first() { return ((Node<T>*) head)->data; }
 } ;
+
+
+template <typename T>
+size len(list<T> l) {
+    return l.len;
+}
+template <typename T>
+bool empty(list<T> l) {
+    return l.len == 0;
+}
+template <typename T>
+T& first(list<T> l) {
+    return l.first();
+}
+
 
 template <typename T>
 struct List {
-    typename list<T>::Node     *head;
-    typename list<T>::Node     *tail;
-    Allocator&                  alloc;
+    Node<void>        *head;
+    Node<void>        *tail;
+    size               len;
+    Allocator&         alloc;
     
     List(Allocator&);
     
     template <typename... Args>
     T* make(Args&&... args);
+    
+    template <typename U, typename... Args>
+    U* make(Args&&... args);
     
     operator list<T> ();
     

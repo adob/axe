@@ -123,6 +123,7 @@ void Buf::ensure(size cap) {
         bufref newbuf = alloc(std::max(cap+buf.len, buf.len * 2));
         copy(newbuf, buf);
         buf = newbuf;
+        
     }
 }
 
@@ -135,6 +136,11 @@ Buf::operator strref () {
 }
 
 TempCStr::TempCStr(const char *data, size len) {
+    if (data == nullptr) {
+        charp = nullptr;
+        return;
+    }
+
     if (len > 255) {
         charp = (char*) malloc(len+1);
     } else {

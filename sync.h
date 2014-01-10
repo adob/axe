@@ -106,7 +106,7 @@ namespace sync {
     template <typename RetType, typename T, typename... Args>
     RetType select(RetType ret, sync::Chan<T>& chan, T& item, Args&&... args);
     
-    
-    #include "sync/sync.inlines.h"
 }
 }
+
+#include "sync/sync.inlines.h"

@@ -89,6 +89,7 @@ template <typename T>
 List<T>::List(Allocator& alloc)
   : head(nullptr)
   , tail(nullptr)
+  , len(0)
   , alloc(alloc)
 {
     // empty
@@ -96,13 +97,15 @@ List<T>::List(Allocator& alloc)
 
 template <typename T>
 List<T>::operator list<T> () {
-    return list<T>{head};
+    return list<T>{head, len};
 }
 
 template <typename T>
 template <typename... Args>
 T* List<T>::make(Args&&... args) {
-    typename list<T>::Node *node = alloc.make<typename list<T>::Node>(std::forward<Args>(args)...);
+    
+    Node<T> *node = alloc.make< Node<T> >(std::forward<Args>(args)...);
+    
     node->next = nullptr;
     
     if (tail) {
@@ -112,5 +115,24 @@ T* List<T>::make(Args&&... args) {
         head = node;
     }
     tail = node;
+    len++;
+    return &node->data;
+}
+
+template <typename T>
+template <typename U, typename... Args>
+U* List<T>::make(Args&&... args) {
+    Node<U> *node = alloc.make< Node<U> >(std::forward<Args>(args)...);
+    
+    node->next = nullptr;
+    
+    if (tail) {
+        tail->next = node;
+    }
+    if (!head) {
+        head = node;
+    }
+    tail = node;
+    len++;
     return &node->data;
 }

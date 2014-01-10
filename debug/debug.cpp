@@ -6,6 +6,7 @@
 
 #include <axe/fmt.h>
 #include <axe/debug.h>
+#include <axe/print.h>
 
 extern "C" {
     char*

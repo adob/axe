@@ -233,48 +233,69 @@ namespace axe { namespace fmt { namespace internal {
             write(str(s));
         }
         
+        template < int > 
+        struct EnableIf { 
+            typedef void type; 
+        };
+        
+        template <typename T>
+        typename EnableIf< 
+            sizeof (
+                (strref (T::*)(Allocator&) const) &T::string
+            )
+        >::type
+        write(T const& t) {
+            write(t.string(out.alloc));
+        }
+        
         template <typename T>
         void write(T *p) {
                 char buf[1024];
-            #ifdef __GXX_RTTI   
-                int status;
-                char *demangled = __cxa_demangle(typeid(p).name(), 0, 0, &status);
-                int cnt = ::snprintf(buf, sizeof buf, "<%s at %p>", demangled, p);
-                free(demangled);
-            #else
-                int cnt = snprintf(buf, sizeof buf, "%p", t);
-            #endif
+//             #ifdef __GXX_RTTI   
+//                 int status;
+//                 char *demangled = __cxa_demangle(typeid(p).name(), 0, 0, &status);
+//                 int cnt = ::snprintf(buf, sizeof buf, "<%s at %p>", demangled, p);
+//                 free(demangled);
+//             #else
+                int cnt = snprintf(buf, sizeof buf, "%p", p);
+//             #endif
                 write(str(buf, cnt));
         }
         
         
-        template <typename T>
-        void write_type(T const& t) {
-        #ifdef __GXX_RTTI
-            int status;
-            char *demangled = __cxa_demangle(typeid(t).name(), 0, 0, &status);
-            write(str(demangled));
-            free(demangled);
-        #else
-            write("???");
-        #endif
-        }
+//         template <typename T>
+//         void write_type(T const& t) {
+//         #ifdef __GXX_RTTI
+//             int status;
+//             char *demangled = __cxa_demangle(typeid(t).name(), 0, 0, &status);
+//             write(str(demangled));
+//             free(demangled);
+//         #else
+//             write("???");
+//         #endif
+//         }
         
         
-        #ifdef __GXX_RTTI
-        template <typename T>
-        void write(std::type_info const& tinfo) {
-            int status;
-            char *demangled = __cxa_demangle(tinfo.name(), 0, 0, &status);
-            write(str(demangled));
-            free(demangled);
-        }
-        #endif
+//         #ifdef __GXX_RTTI
+//         template <typename T>
+//         void write(std::type_info const& tinfo) {
+//             int status;
+//             char *demangled = __cxa_demangle(tinfo.name(), 0, 0, &status);
+//             write(str(demangled));
+//             free(demangled);
+//         }
+//         #endif
+//         
         
-        template <typename T>
-        void write(T const& t) {
-            write_type(t);
-        }
+//         template <typename T>
+//         void write_x(T const& t, ...) {
+//             write_type(t);
+//         }
+        
+//         template <typename T>
+//         void write(T const& t) {
+//             write_x(t, true);
+//         }
         
     } ;
     
@@ -290,9 +311,9 @@ namespace axe { namespace fmt { namespace internal {
         
         bool doprint(size n, PrettyPrinter& out) {
             if (n == N) {
-                if (out.type)
-                    out.write_type(arg);
-                else
+//                 if (out.type)
+//                     out.write_type(arg);
+//                 else
                     out.write(arg);
                 return true;
             }

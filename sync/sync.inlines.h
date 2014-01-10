@@ -1,3 +1,7 @@
+#import <axe/print.h>
+
+namespace axe { namespace sync {
+
 template <typename T>
 Queue<T>::Queue(size max_size)
   : max_size(max_size)
@@ -319,3 +323,5 @@ RetType select(RetType ret, sync::Chan<T>& chan, T& item, Args&&... args) {
     }
     return retback;
 }
+
+}}

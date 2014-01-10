@@ -1,6 +1,7 @@
 #include <malloc.h>
 
 #include <axe/core.h>
+#include <axe/print.h>
 #include "alloc.h"
 
 using namespace axe;
@@ -32,7 +33,7 @@ Region::Region(uint16 blocksize) {
     
     
 void *Region::alloc(size allocsize, unsigned alignment) {
-    //print "Region::alloc(%s, %s)" % allocsize, alignment;
+//     print "Region::alloc(%s, %s)" % allocsize, alignment;
     if (allocsize == 0) {
         return nullptr;
     }
@@ -216,6 +217,7 @@ Allocator::Allocator(size sz) : region(sz) {
 }
 
 bufref Allocator::operator () (size n) {
+    
     return bufref((char*)region.alloc(n, 1), n);
 }
 
