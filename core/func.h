@@ -1,5 +1,6 @@
 #pragma once
 #include <new>
+#include <type_traits>
 namespace axe {
     namespace internal {
         template <typename R, typename... ArgTypes>
@@ -37,6 +38,116 @@ namespace axe {
             return ((internal::funcref_interface<R, ArgTypes...> *) &func)->operator()(std::forward<ArgTypes>(args)...);
         }
     };
+    
+    
+    namespace internal {
+        
+        template <typename Ret, typename... Args>
+        struct FuncIFace {
+            virtual Ret operator () (Args&&... args) = 0;
+            virtual ~FuncIFace() {}
+        } ;
+        
+        template <typename Impl, typename Ret, typename... Args>
+        struct FuncImpl : FuncIFace<Ret, Args...> {
+            Impl impl;
+            
+            FuncImpl(Impl&& impl) : impl(std::forward<Impl>(impl)) {}
+            
+            virtual Ret operator () (Args&&... args) override {
+                return impl(std::forward<Args>(args)...);
+            }
+            
+            virtual ~FuncImpl() override {
+                //printf("destructing func %p\n", this);
+            }
+        } ;
+    }
+    
+    
+    template <typename T>
+    struct Func {
+        
+    } ;
+    
+    template <typename Ret, typename... Args>
+    struct Func<Ret(Args...)> {
+        internal::FuncIFace<Ret, Args...> *funcp;
+        size buffer[7];
+        
+        Func()
+        : funcp(nullptr)
+        {}
+        
+        Func(Func<Ret(Args...)> const&) { 
+            throw "Unimplemented"; 
+        }
+        
+        Func(Func<Ret(Args...)>&& other) {
+            if (((void*)other.funcp) == ((void*)other.buffer)) {
+                memcpy(buffer, other.buffer, sizeof(buffer));
+                funcp = (internal::FuncIFace<Ret, Args...> *) buffer;
+            } else {
+                funcp = other.funcp;
+            }
+            other.funcp = nullptr;
+        }
+        
+        template <typename Functor>
+        Func(Functor&& functor) {
+            if (sizeof(functor) <= sizeof(buffer) && alignof(functor) <= alignof(buffer)) {
+                funcp = (internal::FuncIFace<Ret, Args...> *) buffer;
+            } else {
+                funcp = (internal::FuncIFace<Ret, Args...> *) malloc(sizeof(functor));
+            }
+            
+            new (funcp) internal::FuncImpl<Functor, Ret, Args...>(std::forward<Functor>(functor));
+        }
+        
+        Ret operator () (Args&&... args) {
+            return (*funcp)(std::forward<Args>(args)...);
+        }
+        
+        Func& operator = (nullptr_t) {
+            if (funcp) {
+                funcp->~FuncIFace();
+                
+                if (((void*)funcp) != ((void*)buffer)) {
+                    free(funcp);
+                }
+            }
+            funcp = nullptr;
+            return *this;
+        }
+        
+        Func& operator = (Func&& other) {
+            if (funcp) {
+                funcp->~FuncIFace();
+                
+                if (((void*)funcp) != ((void*)buffer)) {
+                    free(funcp);
+                }
+            }
+            if (((void*)other.funcp) == ((void*)other.buffer)) {
+                memcpy(buffer, other.buffer, sizeof(buffer));
+                funcp = (internal::FuncIFace<Ret, Args...> *) buffer;
+            } else {
+                funcp = other.funcp;
+            }
+            other.funcp = nullptr;
+            return *this;
+        }
+        
+        ~Func() {
+            if (funcp) {
+                funcp->~FuncIFace();
+                
+                if (((void*)funcp) != ((void*)buffer)) {
+                    free(funcp);
+                }
+            }
+        }
+    } ;
 
 // template <typename T, typename R=void, typename... Args>
 // struct methodref {

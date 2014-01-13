@@ -221,6 +221,12 @@ bufref Allocator::operator () (size n) {
     return bufref((char*)region.alloc(n, 1), n);
 }
 
+bufref Allocator::operator () (str s) {
+    bufref b = (*this)(len(s));
+    memcpy(b.data, s.data, s.len);
+    return b;
+}
+
 bufref Allocator::copy_c_str(const char *charp) {
     if (!charp)
         return bufref();

@@ -10,7 +10,7 @@
 
 namespace axe { namespace sync {
 
-using functype = std::function<void()>;
+using functype = Func<void()>;
 std::vector<pthread_t> worker_threads;
 
 const int MaxThreads   = 100000;
@@ -207,21 +207,21 @@ void *worker_thread_func(void *arg) {
     //print "worker_thread started";
     
     WorkerThreadInfo *info = (WorkerThreadInfo *) arg;
-    functype workitem = info->workitem;
+    functype workitem = std::move(info->workitem);
     info->barrier.wait();
     //print "worker_thread after barrier";
     
     while (true) {
 
-        try {
+        //try {
             workitem();
-        } catch (Exception ex) {
-            print "Exception while working on item:", ex.msg;
-            debug::print_backtrace(ex.backtrace);
-        } catch (...) {
-            print "WorkItem threw some exception";
-        }
-        
+        //} catch (Exception ex) {
+        //    print "Exception while working on item:", ex.msg;
+        //    debug::print_backtrace(ex.backtrace);
+        //} catch (...) {
+        //    print "WorkItem threw some exception";
+        //}
+        workitem = nil;
         workitem = work_queue.dequeue();
     }
     

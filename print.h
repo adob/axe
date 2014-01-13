@@ -357,15 +357,24 @@ typename EnableIfInt<void,
         (axe::strref (T::*)(axe::Allocator&) const) &T::string
     )
 >::type
-Write(FILE *file, T const& t, bool quote) {
+Write(FILE *file, T const& t, bool quoted) {
     axe::Allocator alloc;
     axe::strref s = t.string(alloc);
-    Write(file, s.data, s.len, quote);
+    Write(file, s.data, s.len, quoted);
 }
 
+inline void Write(FILE *file, axe::strref s, bool quoted) {
+    Write(file, s.data, s.len, quoted);
+}
+
+inline void Write(FILE *file, axe::error e, bool quoted) {
+    axe::Allocator alloc;
+    axe::strref s = e.string(alloc);
+    Write(file, s.data, s.len, quoted);
+}
 
 #ifdef QSTRING_H
-void Write(FILE *file, QString const& str, bool quoted) 
+inline void Write(FILE *file, QString const& str, bool quoted) 
 {
     Write(file, str.toLocal8Bit().constData(), quoted);
 }

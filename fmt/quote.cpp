@@ -8,7 +8,7 @@ namespace fmt {
 constexpr str lowerhex("0123456789abcdef");
     
 str quote_with(str s, char quote, bool ascii_only , Allocator& alloc) {
-    Buf buf(alloc, 3*len(s)/2);
+    Str buf(alloc, 3*len(s)/2);
     buf.append(quote);
     for (int width = 0; len(s) > 0; s = s(width)) {
         byte b = s[0];

@@ -8,8 +8,8 @@ namespace sync {
     
     void init(errorparam err = {});
     
-    void go(std::function<void()> const& f);
-    void go(std::function<void()>     && f);
+    void go(Func<void()> const& f);
+    void go(Func<void()>     && f);
     
     struct Mutex {
         pthread_mutex_t mutex;

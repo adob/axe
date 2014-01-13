@@ -80,6 +80,11 @@ namespace net {
         
         union {
             sa_family_t family;
+            struct {
+                sa_family_t family;
+                uint16net   port;
+            } addr_ip;
+            
             AddrIPv4 addr_ipv4;
             AddrIPv6 addr_ipv6;
         } ;
@@ -88,8 +93,27 @@ namespace net {
         size_t size() const;
     } ;
     
+    enum protocol : ushort {
+        ip,
+        ip4,
+        ip6,
+        tcp,
+        tcp4,
+        tcp6,
+        unix,
+        stream,
+        dgram
+    } ;
+    
+    
     list<IP>   lookup_ip(str host, Allocator&, errorparam = {});
-    list<Addr> lookup(str host, str service, Allocator&, errorparam = {});
+    list<Addr> lookup(str host, str port, Allocator&, errorparam = {});
+    
+    void       split_host_port(str hostport, str& host, str& port, Allocator&, errorparam = {});
+    
+    //Addr&      resolve(str addr, protocol, Allocator&);
+    Addr      resolve_inet_addr(str addr, errorparam = {});
+    Addr      resolve_inet_addr(str addr, int port, errorparam = {});
     
     struct Conn {
         int sockfd = -1;
@@ -97,40 +121,56 @@ namespace net {
         
         Conn() = default;
         Conn(Conn const&) = delete;
-        Conn(Conn&& other) : sockfd(other.sockfd) {
+        Conn(Conn&& other) : sockfd(other.sockfd), remote_addr(other.remote_addr) {
             other.sockfd = -1;
         }
         
         buf recv(buf buffer, int flags = 0, errorparam = {});
+        buf read(buf buffer, errorparam err) { return recv(buffer, 0 , err); }
+        
+        str send(str string, int flags = 0, errorparam = {});
+        str write(str string, errorparam err) { return send(string, 0, err); }
+        
+        void close(errorparam = {});
+        
+        void setsockopt(int level, int optname, int optval, errorparam = {});
         
         Conn& operator = (Conn const&) = delete;
+        Conn& operator = (Conn&& other) { 
+            sockfd = other.sockfd;
+            remote_addr = other.remote_addr;
+            other.sockfd = -1; 
+            return *this; 
+        }
         
         ~Conn();
     } ;
     
+    Conn dial(protocol, str adddr, errorparam = {});
+    Conn dial_tcp(Addr const& addr, errorparam = {});
+    
     struct Listener {
         int sockfd = -1;
         
+        Listener() = default;
         Listener(int sockfd) : sockfd(sockfd) {}
         Listener(Listener const&) = delete;
         Listener(Listener&& other) : sockfd(other.sockfd) { other.sockfd = -1; }
         
         Conn accept(errorparam = {});
         
+        Addr addr(errorparam = {});
+        
         Listener& operator = (Listener const&) = delete;
+        Listener& operator = (Listener&& other) { sockfd = other.sockfd; other.sockfd = -1; return *this; }
         
         ~Listener();
     } ;
     
-    Listener listen(Addr const& addr, errorparam = {});
+    Listener listen(protocol, str addr, errorparam = {});
+    //Listener listen(str addr, int port, protocol = stream, errorparam = {});
+    Listener tcp_listen(Addr const& addr, errorparam = {});
     
-    namespace tcp {
-        struct Listener {
-            
-        } ;
-        
-        Listener listen(Addr const& addr);
-    } ;
-    
+    void split_host_port(str hostport, str& host, str& port, errorparam err);
 }
 }

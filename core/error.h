@@ -41,8 +41,10 @@ namespace axe {
             type = FuncErr;
         }
         
-        constexpr      operator bool () const    { return charp != 0; }
+        constexpr explicit operator bool () const    { return charp != 0; }
         constexpr bool operator ==   (error rhs) { return charp == rhs.charp; }
+        
+        str string(Allocator&) const;
 
     };
     std::ostream& operator<< (std::ostream& o, error err);
@@ -82,7 +84,24 @@ namespace axe {
             }
         }
         
+        operator error () {
+            if (err) {
+                return *err;
+            } else {
+                return error();
+            }
+        }
+        
+        explicit operator bool () {
+            if (err) {
+                return (bool) *err;
+            } else {
+                return false;
+            }
+        }
+        
         errorparam& operator = (errorparam const&) = delete;
+        str string(Allocator&) const;
     } ;
     
     struct Exception {

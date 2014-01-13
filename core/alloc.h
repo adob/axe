@@ -4,6 +4,7 @@
 namespace axe {
 
     struct bufref;
+    struct strref;
 
     namespace memory {
         
@@ -79,6 +80,7 @@ namespace axe {
         Allocator& operator = (Allocator const&) = delete;
         
         bufref operator () (size n);
+        bufref operator () (strref s);
         
         template <typename T, typename... Args>
         T* make(Args&&... args);

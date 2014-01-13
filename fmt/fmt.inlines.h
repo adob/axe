@@ -1,3 +1,4 @@
+#include <axe/io.h>
 #ifdef __GXX_RTTI
 #include <typeinfo>
 extern "C" {
@@ -503,7 +504,7 @@ template <typename... Args>
 void fprintf(FILE *file, str format, const Args  & ... args) {
     Allocator alloc;
     str s = internal::sprintf(alloc, format, args...);
-    write(file, s);
+    io::write(file, s);
 }
 
 template <typename... Args>

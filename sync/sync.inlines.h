@@ -40,7 +40,7 @@ T Queue<T>::dequeue() {
         deqcond.wait(mutex);
     }
     
-    T item = queue.front();
+    T item = std::move(queue.front());
     size oldqueuesize = queue.size();
     queue.pop();
     
@@ -51,7 +51,7 @@ T Queue<T>::dequeue() {
         enqcond.signal();
     }
     
-    return item;
+    return std::move(item);
 }
 
 template <typename T>
