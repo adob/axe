@@ -1,6 +1,6 @@
 #include <netdb.h>
 
-#import "../net.h"
+#import "PKG.h"
 namespace axe { namespace net { 
 
 Conn dial(protocol proto, str addrstr, errorparam err) {

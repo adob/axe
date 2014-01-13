@@ -1,5 +1,4 @@
-#pragma once
-#include <axe/core/alloc.h>
+#import "alloc.h"
 
 namespace axe {
 

@@ -2,9 +2,9 @@
 #include <ostream>
 #include <netdb.h>
 
-#include <axe/core.h>
+#import "PKG.h"
 #include <axe/print.h>
-#include <axe/debug.h>
+#include <axe/debug/PKG.h>
 
 namespace axe {
 

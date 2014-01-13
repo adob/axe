@@ -1,6 +1,6 @@
 #include <tuple>
 
-#include "../strings.h"
+#include "PKG.h"
 namespace axe {
 namespace strings {
 namespace {

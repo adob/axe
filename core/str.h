@@ -1,11 +1,6 @@
-#pragma once
 #include <string>
 #include <string.h>
 #include <stddef.h>
-
-#include <axe/core/typedefs.h>
-#include <axe/core/assert.h>
-#include <axe/core/alloc.h>
 
 namespace axe {
     using str        = struct strref;
@@ -260,18 +255,55 @@ namespace axe {
     struct Buffer {
         byte *data;
         size len;
+        size cap;
         
-        Buffer() : data(nullptr), len(0) {}
-        explicit Buffer(size len) : data((byte*)malloc(len)), len(len) {}
-        Buffer(Buffer&& other) : data(other.data), len(other.len) {
+        Buffer() : data(nullptr), len(0), cap(0) {}
+        Buffer(size len, size cap) : data((byte*)malloc(cap)), len(len), cap(cap) {}
+        Buffer(Buffer&& other) : data(other.data), len(other.len), cap(other.cap) {
             other.data = nullptr;
         }
         
         void ensure(size newsize) {
-            if (newsize > len) {
-                len = std::min(newsize, len*2);
-                data = (byte*) realloc(data, len);
+            if (len + newsize > cap) {
+                cap = std::min(newsize, cap*2);
+                data = (byte*) realloc(data, cap);
             }
+        }
+        
+        void append(str s) {
+            ensure(s.len);
+            memmove(data + len, s.data, s.len);
+            len += s.len;
+        }
+        void append(char c) {
+            ensure(1);
+            data[len] = c;
+            len += 1;
+        }
+        void append(byte b) {
+            append((char) b);
+        }
+        void append(rune r);
+        
+        void append_many(str s, size count)  {
+            ensure(s.len * count);
+            for (size i = 0; i < count; i++) {
+                memmove(data + len, s.data, s.len);
+                len += s.len;
+            }
+        }
+        void append_many(byte b, size count) {
+            append_many((char) b, count);
+        }
+        void append_many(char c, size count) {
+            ensure(count);
+            memset(data + len, c, count);
+            len += count;
+        }
+        void append_many(rune r, size count);
+        
+        void clear() {
+            len = 0;
         }
         
         Buffer& operator = (Buffer&& other) {
@@ -280,6 +312,7 @@ namespace axe {
             }
             data = other.data;
             len  = other.len;
+            cap  = other.cap;
             other.data = nullptr;
             return *this;
         }
@@ -349,6 +382,26 @@ namespace axe {
         operator const char * ();
         ~TempCStr();
     } ;
+    
+    template <size N>
+    bufref slice(char (&arr)[N], size i, size j=N) {
+        return assert(i <= j && j <= N ), bufref(arr+i, j-i);
+    }
+    
+    template <size N>
+    bufref slice(byte (&arr)[N], size i, size j=N) {
+        return assert(i <= j && j <= N ), bufref(arr+i, j-i);
+    }
+    
+    template <size N>
+    strref slice(const char (&arr)[N], size i, size j=N) {
+        return assert(i <= j && j <= N ), strref(arr+i, j-i);
+    }
+    
+    template <size N>
+    strref slice(const byte (&arr)[N], size i, size j=N) {
+        return assert(i <= j && j <= N ), strreff(arr+i, j-i);
+    }
 
     //template <size N> 
     //using SmallStr   = SmallBuf<N>;

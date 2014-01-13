@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include <axe/fmt.h>
-#include <axe/debug.h>
-#include <axe/print.h>
+#import <axe/fmt/PKG.h>
+#import <axe/print.h>
+#import "PKG.h"
 
 extern "C" {
     char*

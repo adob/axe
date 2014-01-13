@@ -1,5 +1,5 @@
 #import <axe/core.h>
-#import <axe/io.h>
+#import <axe/io/PKG.h>
 
 namespace axe { namespace bufio {
     
@@ -13,14 +13,14 @@ namespace axe { namespace bufio {
         size    limit;
         
         Reader(T& reader, size bufsize = DefaultBufSize)
-          : buffer(bufsize)
+          : buffer(bufsize, bufsize)
           , reader(reader)
           , pos(0)
           , limit(0) {
             
         }
         
-        buf read(buf out, errorparam err = {}) {
+        size read(buf out, errorparam err = {}) {
             if (pos == limit) {
                 if (len(out) >= len(buffer)) {
                     return io::read(reader, out, err);
@@ -31,7 +31,7 @@ namespace axe { namespace bufio {
             size n = std::min(len(out), limit - pos);
             memcpy(out.data, buffer.data+pos, n);
             pos += n;
-            return out(0, n);
+            return n;
         }
         
         byte read_byte(errorparam err = {}) {
@@ -46,6 +46,10 @@ namespace axe { namespace bufio {
             return buffer[pos++];
         }
         
+        size buffered() const {
+            return limit - pos;
+        }
+        
     private:
         size fill(errorparam err) {
             if (pos > 0) {
@@ -53,7 +57,7 @@ namespace axe { namespace bufio {
                 limit -= pos;
                 pos    = 0;
             }
-            size n = io::read(reader, buffer(limit), err).len;
+            size n = io::read(reader, buffer(limit), err);
             limit += n;
             return n;
         }
@@ -66,69 +70,84 @@ namespace axe { namespace bufio {
         size   pos;
         
         Writer(T& writer, size bufsize = DefaultBufSize)
-          : buffer(bufsize)
+          : buffer(bufsize, bufsize)
           , writer(writer)
           , pos(0) {
             
         }
         
-        str write(str in, errorparam err = {}) {
-            
-            while (len(in) > available()) {
-                size n;
-                if (pos == 0) {
-                    n = io::write(writer, in, err).len;
-                    if (err) {
-                        return str();
-                    } else if (n == 0) {
-                        err = EOF;
-                        return str();
-                    }
-                } else {
-                    n = copy(buffer(pos), in);
-                    pos += n;
-                    flush(err);
-                    if (err) {
-                        return str();
-                    }
-                }
-                in = in(n);
+        size write(str in, errorparam err = {}) {
+            // if the buffer is empty and the data is large
+            // just send the data directly
+            if (len(in) >= len(buffer) && pos == 0) {
+                return io::write(writer, in, err);
             }
             
-            pos += copy(buffer(pos), in);
-            return in;
+            // otherwise copy data into buffer
+            size n = copy(buffer(pos), in);
+            pos += n;
+            
+            // if the data was too big for the buffer
+            // we have to flush the buffer
+            if (n < len(in)) {
+                // flush the buffer up to pos
+                size m = io::write(writer, buffer(0, pos), err);
+                pos -= m;
+                if (pos > 0) {
+                    // short write
+                    copy(buffer, buffer(m, m + pos));
+                    return n;
+                }
+                
+                // if the data that's left is larger than buffer
+                // just send the data directly
+                size left = len(in) - n;
+                if (left >= len(buffer)) {
+                    return n + io::write(writer, in, err);
+                } else {
+                    // otherwise just copy it
+                    return n + copy(buffer, in(n));
+                }
+            }
+            
+            return n;
         }
         
         void write(byte b, errorparam err = {}) {
             if (available() == 0) {
-                flush(err);
+                size n = flush(err);
                 if (err) {
+                    return;
+                } else if (n == 0) {
+                    err = EOF;
                     return;
                 }
             }
             buffer[pos++] = b;
         }
         
-        void flush(errorparam err = {}) {
+        size flush(errorparam err = {}) {
+            size n = io::write(writer, buffer(0, pos), err);
+            pos -= n;
+            if (pos > 0) {
+                copy(buffer, buffer(n, n + pos));
+            }
+            return n;
+        }
+        
+        size full_flush(errorparam err = {}) {
             size nn = 0;
-            size n;
-            while (nn < pos) {
-                n = io::write(writer, buffer(nn, pos), err).len;
+            while (pos > 0) {
+                size n = flush(err);
+                nn += n;
                 if (err) {
-                    goto err;
+                    return nn;
                 } else if (n == 0) {
                     err = EOF;
-                    goto err;
+                    return nn;
                 }
-                nn += n;
             }
-            pos = 0;
-            return;
-            
-            err:
-            copy(buffer, buffer(nn+n, pos));
-            pos = nn + n;
-            return;
+            return nn;
         }
         
         size available() {

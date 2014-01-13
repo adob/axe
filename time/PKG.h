@@ -1,4 +1,3 @@
-#pragma once
 #include <axe/core.h>
 
 namespace axe {

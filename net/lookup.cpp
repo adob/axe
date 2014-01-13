@@ -1,7 +1,9 @@
-#import <axe/net.h>
+
 #import <axe/print.h>
-#import <axe/fmt.h>
-#import <axe/strings.h>
+#import <axe/fmt/PKG.h>
+#import <axe/strings/PKG.h>
+
+#import "PKG.h"
 
 namespace axe { namespace net {
 

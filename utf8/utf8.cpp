@@ -1,7 +1,6 @@
-#include "../utf8.h"
+#import "PKG.h"
 
-namespace axe {
-namespace utf8 {
+namespace axe { namespace utf8 {
 
 const rune SurrogateMin = 0xD800;
 const rune SurrogateMax = 0xDFFF;
@@ -176,5 +175,4 @@ size count(str s) {
     return count;
 }
 
-} // namespace utf8
-}
+} } // namespace utf8

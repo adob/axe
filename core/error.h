@@ -1,7 +1,5 @@
-#pragma once
 #include <iosfwd>
 #include <vector>
-#include <axe/core/typedefs.h>
 
 namespace axe {
     struct error {

@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #import <axe/print.h>
-#import "../net.h"
+#import "PKG.h"
 
 namespace axe { namespace net { 
 
@@ -38,20 +38,27 @@ Listener::~Listener() {
     
 }
 
-buf Conn::recv(buf buffer, int flags, errorparam err) {
-    size ret =::recv(sockfd, buffer.data, buffer.len, flags);
-    if (ret == -1) {
-        return err=errno, buf();
-    }
-    return buffer(0, ret);
+Conn::Conn(Conn&& other) : sockfd(other.sockfd), remote_addr(other.remote_addr) {
+    static int count = -1;
+    other.sockfd = count--;
+    //printf("%d\n", sockfd);
 }
 
-str Conn::send(str string, int flags, errorparam err) {
+size Conn::recv(buf buffer, int flags, errorparam err) {
+    //print "BAD", sockfd.value;
+    size ret = ::recv(sockfd, buffer.data, buffer.len, flags);
+    if (ret == -1) {
+        return err=errno, 0;
+    }
+    return ret;
+}
+
+size Conn::send(str string, int flags, errorparam err) {
     size ret = ::send(sockfd, string.data, string.len, flags);
     if (ret == -1) {
-        return err=errno, buf();
+        return err=errno, 0;
     }
-    return string(0, ret);
+    return ret;
 }
 
 void Conn::setsockopt(int level, int optname, int optval, errorparam err) {
@@ -72,9 +79,16 @@ void Conn::close(errorparam err) {
     }
 }
 
+Conn& Conn::operator = (Conn&& other) { 
+    sockfd = other.sockfd;
+    remote_addr = other.remote_addr;
+    other.sockfd = -1; 
+    //printf("%d\n", sockfd);
+    return *this; 
+}
+
 Conn::~Conn() {
     if (sockfd != -1) {
-        //print "close1", this, sockfd;
         int ret = ::close(sockfd);
         if (ret) {
             raise(errno);

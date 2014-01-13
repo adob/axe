@@ -1,8 +1,7 @@
-#pragma once
-#include <axe/core.h>
+#import <axe/core.h>
 
-namespace axe {
-namespace utf8 {
+namespace axe { namespace utf8 {
+    
     const rune RuneError = 0xFFFD;     // the "error" Rune or "Unicode replacement character"
     const rune RuneSelf  = 0x80;       // characters below Runeself are represented as themselves in a single byte.
     const rune MaxRune   = 0x0010FFFF; // Maximum valid Unicode code point.
@@ -36,5 +35,5 @@ namespace utf8 {
     } ; 
     
     runestr runes(str s);
-}
-}
+    
+}}

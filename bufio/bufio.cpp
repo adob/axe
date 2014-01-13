@@ -1,4 +1,4 @@
-#import "../bufio.h"
+#import "PKG.h"
 
 namespace axe { namespace bufio {
 

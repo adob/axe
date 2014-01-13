@@ -1,9 +1,8 @@
-#pragma once
 #include <string>
 
-#include <axe/core.h>
-#include <axe/io.h>
-#include <axe/unicode/utf8.h>
+#import <axe/core.h>
+#import <axe/io/PKG.h>
+#import <axe/utf8/PKG.h>
 
 namespace axe {
 namespace fmt {
@@ -40,4 +39,4 @@ namespace fmt {
 }
 }
 
-#include <axe/fmt/fmt.inlines.h>
+#import <axe/fmt/fmt.inlines.h>

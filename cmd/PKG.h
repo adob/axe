@@ -1,4 +1,3 @@
-#pragma once
 #include <initializer_list>
 #include <axe/core.h>
 

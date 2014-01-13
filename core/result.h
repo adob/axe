@@ -1,5 +1,3 @@
-#pragma once
-#include <axe/core/typedefs.h>
 #include <axe/print.h>
 
 namespace axe {

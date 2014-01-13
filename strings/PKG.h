@@ -1,6 +1,5 @@
-#pragma once
-
 #include <axe/core.h>
+
 namespace axe {
 namespace strings {
     size index(str haystack, str needle);

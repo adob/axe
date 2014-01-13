@@ -1,8 +1,7 @@
 #include <malloc.h>
+#import <axe/print.h>
 
-#include <axe/core.h>
-#include <axe/print.h>
-#include "alloc.h"
+#import "PKG.h"
 
 using namespace axe;
 

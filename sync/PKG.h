@@ -1,6 +1,6 @@
-#include <axe/core.h>
-#include <functional>
 #include <queue>
+
+#import <axe/core.h>
 
 namespace axe {
 namespace sync {
@@ -109,4 +109,4 @@ namespace sync {
 }
 }
 
-#include "sync/sync.inlines.h"
+#import "sync.inlines.h"

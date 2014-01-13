@@ -2,9 +2,8 @@
 #include <iostream>
 #include <string.h>
 
-#include <axe/unicode/utf8.h>
-
-#include "str.h"
+#import <axe/utf8/PKG.h>
+#import "PKG.h"
 
 
 //#include "print.h"

@@ -1,4 +1,3 @@
-#pragma once
 #include <netdb.h>
 #include <axe/core.h>
 
@@ -115,33 +114,42 @@ namespace net {
     Addr      resolve_inet_addr(str addr, errorparam = {});
     Addr      resolve_inet_addr(str addr, int port, errorparam = {});
     
+//     struct WatchInt {
+//         int value;
+//         
+//         WatchInt(int i) : value(i) {}
+//         
+//         operator int () { return value; }
+//         WatchInt& operator = (int other) {
+//             printf("Change %d %d\n", value, other);
+//             if (other == -4) {
+//                 throw "WTF";
+//             }
+//             value = other;
+//             return *this;
+//         }
+//     } ;
+    
     struct Conn {
         int sockfd = -1;
         Addr remote_addr;
         
-        Conn() = default;
+        Conn()            = default;
         Conn(Conn const&) = delete;
-        Conn(Conn&& other) : sockfd(other.sockfd), remote_addr(other.remote_addr) {
-            other.sockfd = -1;
-        }
+        Conn(Conn&& other);
         
-        buf recv(buf buffer, int flags = 0, errorparam = {});
-        buf read(buf buffer, errorparam err) { return recv(buffer, 0 , err); }
+        size recv(buf buffer, int flags = 0, errorparam = {});
+        size read(buf buffer, errorparam err) { return recv(buffer, 0 , err); }
         
-        str send(str string, int flags = 0, errorparam = {});
-        str write(str string, errorparam err) { return send(string, 0, err); }
+        size send(str string, int flags = 0, errorparam = {});
+        size write(str string, errorparam err) { return send(string, 0, err); }
         
         void close(errorparam = {});
         
         void setsockopt(int level, int optname, int optval, errorparam = {});
         
         Conn& operator = (Conn const&) = delete;
-        Conn& operator = (Conn&& other) { 
-            sockfd = other.sockfd;
-            remote_addr = other.remote_addr;
-            other.sockfd = -1; 
-            return *this; 
-        }
+        Conn& operator = (Conn&& other);
         
         ~Conn();
     } ;
