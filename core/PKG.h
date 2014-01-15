@@ -1,6 +1,47 @@
+#include <vector>
+#include <algorithm>
+
 #import "typedefs.h"
 #import "assert.h"
 #import "alloc.h"
+
+namespace axe {
+    using str        = struct strref;
+    using ByteBuf    = struct Buf;
+    using StrBuf     = struct Buf;
+    
+    using byteref    = struct bufref;
+    using buf        = struct bufref;
+    using String     = struct Buffer;
+    
+    struct TempCStr;
+    
+    namespace debug {
+        struct Backtrace {
+            std::vector<void*> addrs;
+            
+            str string(Allocator&) const;
+        } ;
+    }
+    
+    struct Exception {
+        debug::Backtrace   backtrace;
+        std::string        msg;
+        
+        Exception();
+        
+        str string(Allocator&) const;
+    } ;
+    
+    namespace exception {
+        struct BadIndex : Exception {
+            BadIndex();
+            BadIndex(size got);
+            BadIndex(size got, size max);
+        };
+    }
+}
+
 #import "str.h"
 #import "error.h"
 #import "adt.h"

@@ -141,6 +141,11 @@ void Cond::signal() {
     if (pthread_cond_signal(&cond))
         raise(errno);
 }
+
+void Cond::broadcast() {
+    if (pthread_cond_broadcast(&cond))
+        raise(errno);
+}
     
 Cond::~Cond() {
     pthread_cond_destroy(&cond);
@@ -275,7 +280,6 @@ void init(errorparam err) {
     struct sched_param schedp = { 2 };
     ret = sched_setscheduler(mytid, SCHED_FIFO, &schedp);
     if (ret) {
-        exit(1);
         return err = errno;
     }
     

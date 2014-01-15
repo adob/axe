@@ -1,5 +1,6 @@
 #include <netdb.h>
-#include <axe/core.h>
+#import <axe/core.h>
+#import <axe/io/PKG.h>
 
 namespace axe {
 namespace net {
@@ -130,49 +131,28 @@ namespace net {
 //         }
 //     } ;
     
-    struct Conn {
-        int sockfd = -1;
+    struct Conn : io::File {
         Addr remote_addr;
         
-        Conn()            = default;
-        Conn(Conn const&) = delete;
-        Conn(Conn&& other);
-        
         size recv(buf buffer, int flags = 0, errorparam = {});
-        size read(buf buffer, errorparam err) { return recv(buffer, 0 , err); }
+        size read(buf buffer, errorparam err = {}) { return recv(buffer, 0 , err); }
         
-        size send(str string, int flags = 0, errorparam = {});
-        size write(str string, errorparam err) { return send(string, 0, err); }
-        
-        void close(errorparam = {});
+        size send(str string, int flags = MSG_NOSIGNAL, errorparam = {});
+        size write(str string, errorparam err = {}) { return send(string, MSG_NOSIGNAL, err); }
         
         void setsockopt(int level, int optname, int optval, errorparam = {});
-        
-        Conn& operator = (Conn const&) = delete;
-        Conn& operator = (Conn&& other);
-        
-        ~Conn();
     } ;
     
     Conn dial(protocol, str adddr, errorparam = {});
     Conn dial_tcp(Addr const& addr, errorparam = {});
     
-    struct Listener {
-        int sockfd = -1;
+    struct Listener : io::File {
         
         Listener() = default;
-        Listener(int sockfd) : sockfd(sockfd) {}
-        Listener(Listener const&) = delete;
-        Listener(Listener&& other) : sockfd(other.sockfd) { other.sockfd = -1; }
+        explicit Listener(int sockfd) : io::File(sockfd) {}
         
         Conn accept(errorparam = {});
-        
         Addr addr(errorparam = {});
-        
-        Listener& operator = (Listener const&) = delete;
-        Listener& operator = (Listener&& other) { sockfd = other.sockfd; other.sockfd = -1; return *this; }
-        
-        ~Listener();
     } ;
     
     Listener listen(protocol, str addr, errorparam = {});

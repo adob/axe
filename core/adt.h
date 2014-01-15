@@ -7,17 +7,55 @@ struct array {
     T       *arr;
     size     len;
     
-    array();
+    
+    constexpr array() : arr(nullptr), len(0) {}
+    constexpr array(T *t, usize len) : arr(t), len(len) {}
     
     template <size N> 
-    constexpr array(T (&)[N]);
+    constexpr array(T (&)[N])  : arr(arr), len(N) { }
     
     template <size N> 
-    constexpr array(T (&&)[N]);
+    constexpr array(T (&&)[N]) : arr(arr), len(N) { }
     
-    //constexpr       T& operator [] (size i);
-    constexpr const T& operator [] (size i) const;
+    array slice(usize i) const {
+        return assert(i <= len, exception::BadIndex, i, len),
+               array(arr+i, len-i);
+    }
+    
+    array slice(usize i, usize j) const {
+        return assert(i <= len, exception::BadIndex, i , len),
+               assert(i <= j, exception::BadIndex, i, j),
+               array(arr+i, j-i);
+    }
+    
+    array operator () (usize i) const {
+        return slice(i);
+    }
+    
+    array operator () (usize i, usize j) const {
+        return slice(i, j);
+    }
+    
+    T& operator [] (usize i) {
+        return assert(i < len, exception::BadIndex, i, len-1), 
+               arr[i];
+    }
+    constexpr const T& operator [] (usize i) const {
+        return assert(i < len, exception::BadIndex, i, len-1), 
+               arr[i];
+    }
 };
+
+template <typename T>
+size len(array<T> arr) {
+    return arr.len;
+}
+
+template <typename T>
+constexpr T *begin(array<T> arr) { return arr.arr; }
+
+template <typename T>
+constexpr T *end(array<T> arr) { return arr.arr + arr.len; }
 
 template <typename T> size len(array<T> arr);
 
@@ -38,13 +76,13 @@ struct Array {
     }
     
     T& operator [] (size n) {
-        assert(n < N);
-        return data[n];
+        return assert(n < N, exception::BadIndex, n, N-1),
+               data[n];
     }
     
     T const& operator [] (size n) const {
-        assert(n < N);
-        return data[n];
+        return assert(n < N, exception::BadIndex, n, N-1),
+               data[n];
     }
     
     operator bufref () {
@@ -57,7 +95,9 @@ struct Array {
 } ;
 
 template <typename T, size N>
-constexpr size len(Array<T, N> const& arr);
+constexpr size len(Array<T, N> const&) {
+    return N;
+}
 
 template <typename T>
 struct Vector {

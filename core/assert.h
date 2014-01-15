@@ -6,5 +6,5 @@
 #endif
 #define assert(arg) (static_cast<void> (0))
 #else
-#define assert(arg) ((arg) ? (static_cast<void> (0)) : (throw std::logic_error("assertion failed")))
+#define assert(check, T, ...) ((check) ? (static_cast<void> (0)) : (throw T(__VA_ARGS__)))
 #endif

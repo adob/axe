@@ -1,9 +1,11 @@
 #import <axe/core.h>
 #import <axe/io/PKG.h>
+#import <axe/strings/PKG.h>
 
 namespace axe { namespace bufio {
     
     const size DefaultBufSize = 4096;
+    const error ErrBufferFull = "Buffer is full";
     
     template <typename T>
     struct Reader {
@@ -32,6 +34,44 @@ namespace axe { namespace bufio {
             memcpy(out.data, buffer.data+pos, n);
             pos += n;
             return n;
+        }
+        
+        str read(char delim, errorparam err = {}) {
+            size i = strings::index(buffer(pos, limit), delim);
+            if (i != -1) {
+                str line = buffer(pos, pos+i+1);
+                pos += i + 1;
+                return line;
+            }
+            
+            size n = buffered();
+            for (;;) {
+                size m = fill(err);
+                if (err) {
+                    str line = buffer(pos, pos + n + m);
+                    pos += m;
+                    return line;
+                }
+                if (m == 0) {
+                    err = EOF;
+                    return buffer(pos, pos + n);
+                }
+                
+                size i = strings::index(buffer(n, limit), delim);
+                if (i != -1) {
+                    str line = buffer(pos, n + i + 1);
+                    pos += n + i + 1;
+                    return line;
+                }
+                
+                
+                if (buffered() >= len(buffer)) {
+                    pos = limit;
+                    return err=ErrBufferFull, buffer;
+                }
+                
+                n += m;
+            }
         }
         
         byte read_byte(errorparam err = {}) {

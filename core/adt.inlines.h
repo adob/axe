@@ -1,29 +1,5 @@
 
-// array //
-template <typename T>
-array<T>::array() 
-  : len(0) 
-{
-    // empty
-}
 
-template <typename T> 
-template <size N>
-constexpr array<T>::array(T (&arr)[N])
-  : arr(arr)
-  , len(N)
-{
-    // empty
-}
-
-template <typename T> 
-template <size N>
-constexpr array<T>::array(T (&&arr)[N])
-  : arr(arr)
-  , len(N)
-{
-    // empty
-}
 
 
 // template <typename T>
@@ -33,23 +9,8 @@ constexpr array<T>::array(T (&&arr)[N])
 // }
 
 
-template <typename T>
-constexpr const T& array<T>::operator [] (size i) const {
-    return assert(i < len),
-    arr[i];
-}
 
 
-template <typename T>
-size len(array<T> arr) {
-    return arr.len;
-}
-
-// Array //
-template <typename T, size N>
-constexpr size len(Array<T, N> const&) {
-    return N;
-}
 
 // Vector //
 template <typename T>

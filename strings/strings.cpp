@@ -1,6 +1,7 @@
 #include <tuple>
-
-#include "PKG.h"
+#import <axe/utf8/PKG.h> 
+#import <axe/unicode/PKG.h> 
+#import "PKG.h"
 namespace axe {
 namespace strings {
 namespace {
@@ -63,6 +64,7 @@ size index(str haystack, str needle) {
     return -1;
 }
 
+
 str to_lower_ascii(str s, Allocator& alloc) {
     const char *siter = begin(s);
     const char *send  = end(s);
@@ -86,6 +88,42 @@ str to_lower_ascii(str s, Allocator& alloc) {
     }
 
     return s;
+}
+
+str rtrim(str s, str cutset) {
+    if (len(s) == 0 || len(cutset) == 0)
+        return s;
+    return rtrim(s, [=] (rune r) -> bool {
+        return index(cutset, r) != -1;
+    });
+}
+
+str ltrim(str s, str cutset) {
+    if (len(s) == 0 || len(cutset) == 0)
+        return s;
+    return ltrim(s, [=] (rune r) -> bool {
+        return index(cutset, r) != -1;
+    });
+}
+
+str trim(str s, str cutset) {
+    if (len(s) == 0 || len(cutset) == 0)
+        return s;
+    return trim(s, [=] (rune r) -> bool {
+        return index(cutset, r) != -1;
+    });
+}
+
+str trim(str s) {
+    return trim(s, unicode::is_space);
+}
+
+str ltrim(str s) {
+    return ltrim(s, unicode::is_space);
+}
+
+str rtrim(str s) {
+    return rtrim(s, unicode::is_space);
 }
 
 } // namespace strings

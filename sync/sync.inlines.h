@@ -173,6 +173,8 @@ template <typename T>
 void Chan<T>::close() {
     Lock lock(mutex);
     closed = true;
+    lock.unlock();
+    deqcond.broadcast();
 }
 
 template <typename T, typename... Args>
@@ -245,7 +247,7 @@ bool wait(Chan<T>& chan, Args&... args) {
     return wait(&guard, chan, args...);
 }
 
-
+namespace internal {
 template <typename RetType>
 bool select(sync::Guard *guard, bool success, RetType& retback, RetType ret) {
     if (!success) {
@@ -278,7 +280,7 @@ bool select(sync::Guard *guard, bool success, RetType& retback, RetType ret, syn
     }
     
     if (chan.closed) {
-        return select(guard, success, retback, args...);
+        return internal::select(guard, success, retback, args...);
     }
     
     sync::GuardList curr {guard, nullptr, chan.guards};
@@ -287,7 +289,7 @@ bool select(sync::Guard *guard, bool success, RetType& retback, RetType ret, syn
     chan.guards = &curr;
     
     lock.unlock();
-    bool b = select(guard, true, retback, args...);
+    bool b = internal::select(guard, true, retback, args...);
     lock.relock();
     
     if (curr.prev)
@@ -313,14 +315,16 @@ bool select(sync::Guard *guard, bool success, RetType& retback, RetType ret, syn
     
     return b;
 }
+}
 
 template <typename RetType, typename T, typename... Args>
 RetType select(RetType ret, sync::Chan<T>& chan, T& item, Args&&... args) {
     RetType retback;
     sync::Guard guard;
-    while (!select(&guard, false, retback, ret, chan, item, args...)) {
+    while (!internal::select(&guard, false, retback, ret, chan, item, args...)) {
         print "repeat";
     }
+    
     return retback;
 }
 

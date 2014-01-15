@@ -52,7 +52,7 @@ str IP::string(Allocator& alloc) const {
     case IPv4:  return ipv4.string(alloc);
     case IPv6:  return ipv6.string(alloc);
     }
-    assert(false);
+    assert(false, exception::AssertionFailed, "should not be here");
 }
 
 str Addr::string(Allocator& alloc) const {
@@ -69,7 +69,7 @@ size_t Addr::size() const {
     case AF_INET: return sizeof(struct sockaddr);
     case AF_INET6: return sizeof(AddrIPv6);
     }
-    assert(false);
+    assert(false, exception::AssertionFailed, "should not be here");
     return 0;
 }
 

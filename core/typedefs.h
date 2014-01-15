@@ -3,7 +3,8 @@
 
 namespace axe {
     
-    using size    = size_t;
+    using size    = intptr_t;
+    using usize   = size_t;
     using byte    = uint8_t;
     using rune    = char32_t;
     using char16  = char16_t;

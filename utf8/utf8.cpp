@@ -104,9 +104,42 @@ rune decode_rune(str s, int& runesize, bool& isshort) {
 
 } // namespace internal
 
+
 rune decode(str s, int& nbytes) {
     bool isshort;
     return internal::decode_rune(s, nbytes, isshort);
+}
+
+rune decode_last(str s, int& nbytes) {
+    size end = len(s);
+    if (end == 0) {
+        return nbytes=0, RuneError;
+    }
+    size start = end - 1;
+    rune r = s[start];
+    if (r < RuneSelf) {
+        return nbytes=1, r;
+    }
+    // guard against O(n^2) behavior when traversing
+    // backwards through strings with long sequences of
+    // invalid UTF-8.
+    size lim = end - UTFMax;
+    if (lim < 0) {
+        lim = 0;
+    }
+    for (start--; start >= lim; start--) {
+        if (rune_start(s[start])) {
+            break;
+        }
+    }
+    if (start < 0) {
+        start = 0;
+    }
+    r = decode(s(start, end), nbytes);
+    if (start + nbytes != end) {
+        return nbytes=1, RuneError;
+    }
+    return r;
 }
 
 str encode(rune r, bufref b) {

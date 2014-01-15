@@ -2,17 +2,9 @@
 #include <string.h>
 #include <stddef.h>
 
-namespace axe {
-    using str        = struct strref;
-    using ByteBuf    = struct Buf;
-    using StrBuf     = struct Buf;
 
-    using byteref    = struct bufref;
-    using buf        = struct bufref;
-    using String     = struct Buffer;
-    
-        struct TempCStr;
-    
+namespace axe {
+   
     //#ifdef __clang__
     //constexpr size len(const char *s) {
     //    return s[0] == '\0' ? 0 : 1 + len(s+1);
@@ -30,7 +22,8 @@ namespace axe {
         
         constexpr strref() : data(nullptr), len(0) {}
         constexpr strref(const char *s) : data(s), len(s != nullptr ? __builtin_strlen(s) : 0) {}
-        explicit strref(std::string const& s) : data(s.data()), len(s.size()) {}
+        strref(std::string const& s) : data(s.data()), len(s.size()) {}
+        strref(std::string&&) = delete;
         constexpr strref(std::nullptr_t) : data(nullptr), len(0) {}
         constexpr strref(const char *str, size strlen) : data(str), len(strlen) {}
         constexpr strref(const byte *str, size strlen) : data((char*)str), len(strlen) {}
@@ -39,29 +32,31 @@ namespace axe {
         
         TempCStr tmp_c_str();
         
-        constexpr strref slice(size i) const {
-            return assert(i <= len), 
-            strref(data+i, len-i);
+        constexpr strref slice(usize i) const {
+            return assert(i <= len, exception::BadIndex, i, len),
+                   strref(data+i, len-i);
         }
-        constexpr strref slice(size i, size j) const {
-            return assert(i <= len && i <= j),
-            strref(data+i, j-i);
+        constexpr strref slice(usize i, usize j) const {
+            return assert(i <= len, exception::BadIndex, i , len),
+                   assert(i <= j, exception::BadIndex, i, j),
+                   strref(data+i, j-i);
         }
         
-        constexpr char operator [] (size i) const {
-            return assert(i < len), data[i];
+        constexpr char operator [] (usize i) const {
+            return assert(i < len, exception::BadIndex, i, len-1),
+                   data[i];
         }
         
         explicit operator bool () const {
             return data != nullptr;
         }
-        explicit operator std::string () const {
+        operator std::string () const {
             return std::string(data, len);
         }
-        constexpr strref operator() (size i, size j) const {
+        constexpr strref operator() (usize i, usize j) const {
             return slice(i, j);
         }
-        constexpr strref operator() (size i) const {
+        constexpr strref operator() (usize i) const {
             return slice(i);
         }
     };
@@ -91,34 +86,36 @@ namespace axe {
         size   len;
         
         constexpr bufref()                     : data(0), len(0) {}
-        constexpr bufref(char *data, size len) : data((byte*)data), len(len) {}
-        constexpr bufref(byte *data, size len) : data(data), len(len) {}
+        constexpr bufref(char *data, usize len) : data((byte*)data), len(len) {}
+        constexpr bufref(byte *data, usize len) : data(data), len(len) {}
         template <size N> constexpr bufref(char (&str)[N]) : data((byte*)str), len(N) {}
         template <size N> constexpr bufref(uint8 (&bytes)[N]) : data(bytes), len(N) {}
         
-        bufref slice(size i) const { 
-            assert(i <= len); 
-            return bufref(data+i, len-i); 
+        bufref slice(usize i) const { 
+            return assert(i <= len, exception::BadIndex, i, len), 
+                   bufref(data+i, len-i); 
         }
         
-        bufref slice(size i, size j) const  { 
-            assert(j <= len && i <= j); 
-            return bufref(data+i, j-i); 
+        bufref slice(usize i, usize j) const  { 
+            return assert(i <= len, exception::BadIndex, i , len),
+                   assert(i <= j, exception::BadIndex, i, j),
+                   bufref(data+i, j-i); 
         }
         
-        constexpr byte& operator [] (size i) const {
-            return assert(i < len), data[i];
+        constexpr byte& operator [] (usize i) const {
+            return assert(i < len, exception::BadIndex, i,len-1), 
+                   data[i];
         }
         
 //         constexpr byte operator [] (size i) const {
 //             return assert(i < len), data[i];
 //         }
         
-        bufref operator() (size i, size j) const {
+        bufref operator() (usize i, usize j) const {
             return slice(i, j);
         }
         
-        bufref operator() (size i) const  {
+        bufref operator() (usize i) const  {
             return slice(i);
         }
         
@@ -134,14 +131,14 @@ namespace axe {
         }
         
         bufref& operator ++ () {
-            assert(len > 0);
+            assert(len > 0, exception::BadIndex);
             len--;
             data++;
             return *this;
         }
         
         bufref operator ++ (int) {
-            assert(len > 0);
+            assert(len > 0, exception::BadIndex);
             bufref copy = *this;
             len--;
             data++;
@@ -215,9 +212,9 @@ namespace axe {
         void append_many(rune r, size count);
         
         
-        void ensure(size cap) {
+        void ensure(usize cap) {
             if (len + cap > buf.len) {
-                bufref newbuf = alloc(std::max(cap+buf.len, buf.len * 2));
+                bufref newbuf = alloc(std::max((size)cap+buf.len, buf.len * 2));
                 copy(newbuf, buf);
                 buf = newbuf;
                 
@@ -258,14 +255,14 @@ namespace axe {
         size cap;
         
         Buffer() : data(nullptr), len(0), cap(0) {}
-        Buffer(size len, size cap) : data((byte*)malloc(cap)), len(len), cap(cap) {}
+        Buffer(usize len, size cap) : data((byte*)malloc(cap)), len(len), cap(cap) {}
         Buffer(Buffer&& other) : data(other.data), len(other.len), cap(other.cap) {
             other.data = nullptr;
         }
         
-        void ensure(size newsize) {
+        void ensure(usize newsize) {
             if (len + newsize > cap) {
-                cap = std::min(newsize, cap*2);
+                cap = std::min((size)newsize, cap*2);
                 data = (byte*) realloc(data, cap);
             }
         }
@@ -285,22 +282,22 @@ namespace axe {
         }
         void append(rune r);
         
-        void append_many(str s, size count)  {
+        void append_many(str s, usize count)  {
             ensure(s.len * count);
             for (size i = 0; i < count; i++) {
                 memmove(data + len, s.data, s.len);
                 len += s.len;
             }
         }
-        void append_many(byte b, size count) {
+        void append_many(byte b, usize count) {
             append_many((char) b, count);
         }
-        void append_many(char c, size count) {
+        void append_many(char c, usize count) {
             ensure(count);
             memset(data + len, c, count);
             len += count;
         }
-        void append_many(rune r, size count);
+        void append_many(rune r, usize count);
         
         void clear() {
             len = 0;
@@ -317,31 +314,31 @@ namespace axe {
             return *this;
         }
         
-        bufref slice(size i, size j) const  { 
-            assert(j <= len && i <= j); 
+        bufref slice(usize i, usize j) const  { 
+            assert(j <= len && i <= j, exception::BadIndex, std::min(i, j));
             return bufref(data+i, j-i); 
         }
         
-        bufref slice(size i) const { 
-            assert(i <= len); 
+        bufref slice(usize i) const { 
+            assert(i <= len, exception::BadIndex, len); 
             return bufref(data+i, len-i); 
         }
         
-        bufref operator() (size i, size j) const {
+        bufref operator() (usize i, usize j) const {
             return slice(i, j);
         }
         
-        bufref operator() (size i) const  {
+        bufref operator() (usize i) const  {
             return slice(i);
         }
         
-        byte& operator [] (size i) {
-            assert(i < len);
+        byte& operator [] (usize i) {
+            assert(i < len, exception::BadIndex, len-1);
             return data[i];
         }
         
-        byte operator [] (size i) const {
-            assert(i < len);
+        byte operator [] (usize i) const {
+            assert(i < len, exception::BadIndex, len-1);
             return data[i];
         }
         
@@ -383,24 +380,31 @@ namespace axe {
         ~TempCStr();
     } ;
     
-    template <size N>
-    bufref slice(char (&arr)[N], size i, size j=N) {
-        return assert(i <= j && j <= N ), bufref(arr+i, j-i);
+    template <usize N>
+    bufref slice(char (&arr)[N], usize i, usize j=N) {
+        return assert(i <= j && j <= N , exception::BadIndex, std::min(j, N)), 
+               bufref(arr+i, j-i);
     }
     
-    template <size N>
-    bufref slice(byte (&arr)[N], size i, size j=N) {
-        return assert(i <= j && j <= N ), bufref(arr+i, j-i);
+    template <usize N>
+    bufref slice(byte (&arr)[N], usize i, usize j=N) {
+        return assert(i <= j, exception::BadIndex, i, j),
+               assert(j <= N, exception::BadIndex, j, N),
+               bufref(arr+i, j-i);
     }
     
-    template <size N>
-    strref slice(const char (&arr)[N], size i, size j=N) {
-        return assert(i <= j && j <= N ), strref(arr+i, j-i);
+    template <usize N>
+    strref slice(const char (&arr)[N], usize i, usize j=N) {
+        return assert(i <= j, exception::BadIndex, i, j), 
+               assert(j <= N, exception::BadIndex, j, N),
+               strref(arr+i, j-i);
     }
     
-    template <size N>
-    strref slice(const byte (&arr)[N], size i, size j=N) {
-        return assert(i <= j && j <= N ), strreff(arr+i, j-i);
+    template <usize N>
+    strref slice(const byte (&arr)[N], usize i, usize j=N) {
+        return assert(i <= j, exception::BadIndex, i, j), 
+               assert(j <= N, exception::BadIndex, j, N),
+               strreff(arr+i, j-i);
     }
 
     //template <size N> 

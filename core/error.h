@@ -54,33 +54,27 @@ namespace axe {
 
     constexpr error OK(error::NoErr);
 
-    template <typename T>
-    struct witherror {
-        T item;
-        error err;
-        
-        witherror(T&& t) : item(t), err(OK) {}
-        witherror(T const& t) : item(t), err(OK) {}
-        witherror(error e) : err(e) {}
-        witherror(T&& t, error e) : item(t), err(e) {}
-        witherror(T const& t, error e) : item(t), err(e) {}
-        
-        operator T () { return item; }
-    };
-
+//     template <typename T>
+//     struct witherror {
+//         T item;
+//         error err;
+//         
+//         witherror(T&& t) : item(t), err(OK) {}
+//         witherror(T const& t) : item(t), err(OK) {}
+//         witherror(error e) : err(e) {}
+//         witherror(T&& t, error e) : item(t), err(e) {}
+//         witherror(T const& t, error e) : item(t), err(e) {}
+//         
+//         operator T () { return item; }
+//     };
+    
     struct errorparam {
         error *err;
         
         errorparam()         : err(nullptr) {}
         errorparam(error& e) : err(&e)      {}
         
-        void operator = (error e) {
-            if (err) {
-                *err = e;
-            } else {
-                throw e;
-            }
-        }
+        inline void operator = (error e);
         
         operator error () {
             if (err) {
@@ -102,11 +96,38 @@ namespace axe {
         str string(Allocator&) const;
     } ;
     
-    struct Exception {
-        std::vector<void*> backtrace;
-        std::string        msg;
-    } ;
+    namespace exception {
+        
+        struct BadDereference : Exception {
+            BadDereference(void *ptr);
+        };
+        
+        struct NullDereference : Exception {
+            NullDereference();
+        };
+        
+        struct Error : Exception {
+            Error(error);
+        };
+        
+        struct AssertionFailed : Exception {
+            AssertionFailed(str);
+        };
+    }
     
+    void errorparam::operator = (error e) {
+        try {
+            *err = e;
+        } catch (exception::NullDereference) {
+            throw exception::Error(e);
+        }
+    }
+
+    
+    
+    
+    void raise(const char*);
     void raise(str msg);
     void raise(int errno_);
+    void raise(error e);
 }

@@ -22,12 +22,12 @@ Conn dial_tcp(Addr const& addr, errorparam err) {
     int ret;
     Conn conn;
     
-    conn.sockfd = ::socket(addr.family, SOCK_STREAM, 0);
-    if (conn.sockfd == -1) {
+    conn.fd = ::socket(addr.family, SOCK_STREAM, 0);
+    if (conn.fd == -1) {
         return err=errno, std::move(conn);
     }
     
-    ret = ::connect(conn.sockfd, (sockaddr *) &addr, sizeof(addr));
+    ret = ::connect(conn.fd, (sockaddr *) &addr, sizeof(addr));
     if (ret == -1) {
         return err=errno, std::move(conn);
     }

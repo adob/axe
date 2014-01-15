@@ -5,6 +5,7 @@
 #import "PKG.h"
 #include <axe/print.h>
 #include <axe/debug/PKG.h>
+#include <axe/fmt/PKG.h>
 
 namespace axe {
 
@@ -31,17 +32,21 @@ std::ostream& operator<< (std::ostream& stream, error err) {
 }
 
 str error::string(Allocator&) const {
+    char buf[1024];
+    
     if (type == error::StringErr && charp) {
         return str(charp);
     } else if (type == error::ErrNo) {
         if (code == -1) {
             return "EOF";
         }
-        char buf[1024];
         return str(strerror_r(code, buf, sizeof buf));
         // result may be truncated but strerror_r() guarantees 
         // it is NUL-terminated
     } else  if (type == error::StringErr){
+        if (charp == nullptr) {
+            return strerror_r(0, buf, sizeof buf);
+        }
         return str(charp);
     } else if (type == error::GAIErr) {
         return str(gai_strerror(code));
@@ -57,12 +62,30 @@ str errorparam::string(Allocator& alloc) const {
     }
 }
 
+Exception::Exception() {
+    backtrace = debug::backtrace(0);
+}
+
 void raise(str msg) {
-    Exception ex { debug::backtrace(2), (std::string) msg };
+    Exception ex;
+    ex.msg = msg;
     throw ex;
 }
 
-void raise(int err) {
-    Exception ex { debug::backtrace(2), std::string(strerror(err)) };
+void raise(const char* strp) {
+    raise(strp);
 }
+
+void raise(int err) {
+    Exception ex;
+    ex.msg = strerror(err);
+    throw ex;
+}
+
+void raise(error e) {
+    Exception ex;
+    ex.msg = fmt::sprintf("Error: %s", e);
+    throw ex;
+}
+
 }

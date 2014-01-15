@@ -6,6 +6,8 @@
 
 #import <axe/fmt/PKG.h>
 #import <axe/print.h>
+#import <axe/debug/PKG.h>
+#import <axe/strings/PKG.h>
 #import "PKG.h"
 
 extern "C" {
@@ -22,29 +24,28 @@ namespace axe { namespace debug {
 
 
 void print_backtrace(int offset) {
-    std::vector<void*> ptrs = backtrace(offset);
-    print_backtrace(ptrs);
-    
+    Backtrace bt = backtrace(offset);
+    warn bt;
 }
 
-void print_backtrace(std::vector<void*> backtrace) {
-    Allocator alloc;
-    flockfile(stdout);
-    auto unnlock_stdout = defer([]{ funlockfile(stdout); });
+str Backtrace::string(Allocator& alloc) const {
+    std::vector<str> lines;
     
-    for (void *ptr : backtrace) {
+    for (void *ptr : addrs) {
         LineInfo info = debug::addr2line(ptr);
-        
         Str s(alloc);
-        s += fmt::sprintf(alloc, "  %#.12x", (uintptr)ptr);
+        
+        s += fmt::sprintf("  %#.12x", (uintptr)ptr);
         if (info.funcname != "??") {
-            s += fmt::sprintf(alloc, " in %s", info.funcname);
+            s += fmt::sprintf(" in %s", info.funcname);
         }
         if (info.filepath != "??") {
-            s += fmt::sprintf(alloc, " at %s:%d", info.filepath, info.lineno);
+            s += fmt::sprintf(" at %s:%d", info.filepath, info.lineno);
         }
-        fmt::printf("%s\n", (str) s);
+        lines.push_back(s);
     }
+    
+    return strings::join(alloc, lines, "\n");
 }
 
 void crash_handler() {
@@ -58,8 +59,8 @@ void crash_handler() {
         fmt::printf(" error: ");
         print e;
     } catch (Exception e) {
-        fmt::printf(" exception: %s\n", e.msg);
-        print_backtrace(e.backtrace);
+        fmt::printf(" exception: %s\n%s\n", e.msg, e.backtrace);
+        
         return;
     } catch (...) {
         std::type_info *t = __cxa_current_exception_type();
@@ -86,10 +87,25 @@ void sigfpe_handler(int /*signum*/, siginfo_t */*siginfo*/, void*) {
     //abort();
 }
 
+void sigpipe_handler(int /*signum*/, siginfo_t */*siginfo*/, void*) {
+    //printf("Terminating due to SIGFPE at %#zx\n", (uintptr) siginfo->si_addr);
+    //Allocator alloc;
+    //print_backtrace(1, alloc);
+    fprintf(stderr, "SIGPIPE\n");
+    
+    sigset_t x;
+    sigemptyset (&x);
+    sigaddset(&x, SIGPIPE);
+    sigprocmask(SIG_UNBLOCK, &x, NULL);
+    
+    raise("SIGPIPE");
+    //abort();
+}
+
 void sigsegv_handler(int /*signum*/, siginfo_t *siginfo, void*) {
-    print "SIGSEGV";
-    print_backtrace(0);
-    std::string msg = fmt::sprintf("Terminating due to SIGSEGV at %#x\n", (uintptr) siginfo->si_addr);
+    //print "SIGSEGV";
+    //print_backtrace(0);
+    //std::string msg = fmt::sprintf("Terminating due to SIGSEGV at %#x\n", (uintptr) siginfo->si_addr);
 //     print msg;
 //     throw "foo";
     sigset_t x;
@@ -97,7 +113,14 @@ void sigsegv_handler(int /*signum*/, siginfo_t *siginfo, void*) {
     sigaddset(&x, SIGSEGV);
     sigprocmask(SIG_UNBLOCK, &x, NULL);
 //     throw 3;
-    raise(str(msg));
+    //raise(str(msg));
+    
+    if (siginfo->si_addr == 0) {
+        throw exception::NullDereference();
+    } else {
+        throw exception::BadDereference(siginfo->si_addr);
+    }
+    
 }
 
 void init() {
@@ -117,6 +140,12 @@ void init() {
     if (err) {
         throw error(errno);
     }
+    
+    action.sa_sigaction = sigpipe_handler;
+    err = sigaction(SIGPIPE, &action, nil);
+    if (err) {
+        throw error(errno);
+    }
 }
 
 std::string demangle(str mangled) {
@@ -132,14 +161,14 @@ std::string demangle(str mangled) {
     
 }
 
-std::vector<void*> backtrace(int offset) {
+Backtrace backtrace(int offset) {
     std::vector<void*> ptrs(1024);
     int nptrs = ::backtrace(ptrs.data(), ptrs.size());
     if (offset != 0) {
         ptrs.erase(begin(ptrs), begin(ptrs)+offset);
     }
     ptrs.resize(nptrs);
-    return ptrs;
+    return Backtrace{ptrs};
 }
 
 }}

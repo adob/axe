@@ -110,7 +110,7 @@ list<Addr> lookup(str host, str service, Allocator& alloc, errorparam err) {
             case AF_INET: {                
                 Addr *addr = addrs.make();
                 //print "got one", ntohs(((sockaddr_in*)result->ai_addr)->sin_port);
-                assert(result->ai_addrlen <= sizeof(*addr));
+                assert(result->ai_addrlen <= sizeof(*addr), exception::AssertionFailed, "size mismatch");
                 memcpy(addr, result->ai_addr, result->ai_addrlen);
                 //print addr->addr_ipv4.port.val;
                 //print offsetof(Addr, addr_ipv4.port);
@@ -118,7 +118,7 @@ list<Addr> lookup(str host, str service, Allocator& alloc, errorparam err) {
             } break;
             case AF_INET6: {
                 Addr *addr = addrs.make();
-                assert(result->ai_addrlen <= sizeof(*addr));
+                assert(result->ai_addrlen <= sizeof(*addr), exception::AssertionFailed, "size mismatch");
                 memcpy(addr, result->ai_addr, result->ai_addrlen);
             } break;
             default:

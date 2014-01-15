@@ -17,6 +17,9 @@ namespace fmt {
     template <typename... Args>
     str sprintf(Allocator&, str format, const Args & ... args);
     
+    template <typename T, typename... Args>
+    void writef(T&, str format, const Args & ... args);
+    
     template <typename... Args>
     std::string sprintf(str format, const Args & ... args);
     

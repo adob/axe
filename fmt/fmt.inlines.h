@@ -80,9 +80,10 @@ namespace axe { namespace fmt { namespace internal {
             
             size i = sizeof buf;
             size ncount = 0;
-            if (n == 0)
+            if (n == 0) {
                 buf[--i] = '0';
-            else {
+                ncount++;
+            } else {
                 do {
                     ncount++;
                     if (sep && (ncount % nsep) == 0) {
@@ -498,6 +499,13 @@ str sprintf(Allocator& alloc, str format, const Args & ... args) {
 template <typename... Args>
 void printf(str format, const Args & ... args) {
     fprintf(stdout, format, args...);
+}
+
+template <typename T, typename... Args>
+void writef(T& t, str format, const Args & ... args) {
+    Allocator alloc;
+    str s = internal::sprintf(alloc, format, args...);
+    io::write(t, s);
 }
 
 template <typename... Args>
