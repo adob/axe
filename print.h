@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <axe/core.h>
+#include <axe/str.h>
 
 
 // extern "C" {
@@ -771,7 +771,7 @@ struct Print : PrintUndecided
     
     ~Print() {
         if ((opts & OptNone) && !(opts & OptDone)) {
-            fputs_unlocked(str-2, file);
+            fputs_unlocked(str, file);
         } else if (str_present) {
             Write(file, str, false);
         }

@@ -1,20 +1,8 @@
 #include <unistd.h>
-#import "PKG.h"
+#import "io.h"
 
 
 namespace axe { namespace io {
-
-void File::close(errorparam err) {
-    if (fd == -1) {
-        return err="Already closed";
-    }
-    
-    int ret = ::close(fd);
-    if (ret) {
-        return err=errno;
-    }
-}
-
 
 size write(FILE *f, str s, errorparam err) {
     size n = fwrite(s.data, 1, s.len, f);
@@ -58,5 +46,7 @@ size read(int fd, buf b, errorparam err) {
     }
     return ret;
 }
+    
+
 
 }}

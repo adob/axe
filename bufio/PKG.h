@@ -74,6 +74,10 @@ namespace axe { namespace bufio {
             }
         }
         
+//         friend size read(Reader<T>& r, buf b, errorparam err = {}) {
+//             return r.read(b, err);
+//         }
+        
         byte read_byte(errorparam err = {}) {
             if (pos == limit) {
                 size n = fill(err);
@@ -166,6 +170,10 @@ namespace axe { namespace bufio {
             buffer[pos++] = b;
         }
         
+//         friend size write(Writer<T>& w, str s, errorparam err = {}) {
+//             return w.write(s, err);
+//         }
+        
         size flush(errorparam err = {}) {
             size n = io::write(writer, buffer(0, pos), err);
             pos -= n;
@@ -195,4 +203,5 @@ namespace axe { namespace bufio {
         }
         
     } ;
+    
 }}

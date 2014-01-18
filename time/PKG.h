@@ -1,12 +1,11 @@
-#include <axe/core.h>
-
+#import <axe/typedefs.h>
 namespace axe {
-namespace time {
-    // Returns a monotonicly-inreasing timestamp in nanoseconds since an
-    // unspecified starting point
-    int128 monotonic();
-    
-    // Returns nanoseconds elpased since the UNIX Epoch
-    int128 now();
-}
+    namespace time {
+        // Returns a monotonicly-inreasing timestamp in nanoseconds since an
+        // unspecified starting point
+        int128 monotonic();
+        
+        // Returns nanoseconds elpased since the UNIX Epoch
+        int128 now();
+    }
 }

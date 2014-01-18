@@ -43,8 +43,9 @@
 
 
 #include <axe/print.h>
-#include <axe/fmt/PKG.h>
-#import "PKG.h"
+#include <axe/fmt/fmt.h>
+#import "debug.h"
+#import "addr2line.h"
 
 //#include "_elftc.h"
 
@@ -64,11 +65,11 @@ namespace {
 int dwarf_attrval_addr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Addr *addrp, Dwarf_Error *err) {
     Dwarf_Attribute at;
     int ret;
-    if (ret = dwarf_attr(die, attr, &at, err))
+    if ((ret = dwarf_attr(die, attr, &at, err)))
         return ret;
     
     Dwarf_Half form;
-    if (ret = dwarf_whatform(at, &form, err)) 
+    if ((ret = dwarf_whatform(at, &form, err))) 
         return ret;
     //print "got form", form;
     
@@ -80,14 +81,14 @@ int dwarf_attrval_addr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Addr *addrp, Dwarf_
     case DW_FORM_ref_udata:
         print "got ref udata";
     case DW_FORM_addr: {
-        if (ret = dwarf_formaddr(at, addrp, err))
+        if ((ret = dwarf_formaddr(at, addrp, err)))
             return ret;
         //print "got addr", *addrp;
         return DW_DLV_OK;
         
     } break;
     case DW_FORM_data8: {
-        if (ret = dwarf_formudata(at, addrp, err))
+        if ((ret = dwarf_formudata(at, addrp, err)))
             return ret;
         return DW_DLV_OK;
     }
@@ -101,11 +102,11 @@ int dwarf_attrval_addr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Addr *addrp, Dwarf_
 int dwarf_attrval_string(Dwarf_Die die, Dwarf_Half attr, const char **strp, Dwarf_Error *err) {
     Dwarf_Attribute at;
     int ret;
-    if (ret = dwarf_attr(die, attr, &at, err))
+    if ((ret = dwarf_attr(die, attr, &at, err)))
         return ret;
     
     Dwarf_Half form;
-    if (ret = dwarf_whatform(at, &form, err)) 
+    if ((ret = dwarf_whatform(at, &form, err))) 
         return ret;
     
     switch (form) {
@@ -211,9 +212,9 @@ void translate(Dwarf_Debug dbg, Dwarf_Unsigned addr, debug::LineInfo& info, erro
     Dwarf_Line *lbuf;
     Dwarf_Error de;
     Dwarf_Half tag;
-    Dwarf_Unsigned lopc, hipc, lineno, plineno;
+    Dwarf_Unsigned lopc, hipc, lineno, plineno, pplineno;
     Dwarf_Signed lcount;
-    Dwarf_Addr lineaddr, plineaddr;
+    Dwarf_Addr lineaddr, plineaddr, pplineaddr;
     const char *funcname, *file, *pfile;
     char *file0;
     int i, ret;
@@ -285,6 +286,7 @@ void translate(Dwarf_Debug dbg, Dwarf_Unsigned addr, debug::LineInfo& info, erro
         }
         //print "START";
         plineaddr = ~0ULL;
+        pplineaddr = plineaddr;
         plineno = 0;
         pfile = "??";
         for (i = 0; i < lcount; i++) {
@@ -311,19 +313,28 @@ void translate(Dwarf_Debug dbg, Dwarf_Unsigned addr, debug::LineInfo& info, erro
             
             if (addr == lineaddr) {
                 //print "!111", file, pfile;
+                if (plineaddr != ~0ULL) {
+                    lineno = plineno;
+                }
                 goto out;
             } else if (addr < lineaddr && addr > plineaddr) {
+                if (pplineaddr != ~0ULL) {
+                    lineno = pplineno;
+                }
                 lineno = plineno;
                 //fmt::printf("!!!2 %x %s %s %x %x\n", addr, file, pfile, plineaddr, lineaddr);
                 file = pfile;
                 
                 goto out;
             }
+            
+            pplineaddr = plineaddr;
             if (lineend)
                 plineaddr = ~0ULL;
             else
                 plineaddr = lineaddr;
             
+            pplineno = plineno;
             plineno = lineno;
             pfile = file;
         }

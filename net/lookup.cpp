@@ -1,7 +1,8 @@
-
+#import <axe/typedefs.h>
 #import <axe/print.h>
-#import <axe/fmt/PKG.h>
-#import <axe/strings/PKG.h>
+#import <axe/fmt/fmt.h>
+#import <axe/strings/strings.h>
+#import <axe/defer.h>
 
 #import "PKG.h"
 
@@ -51,7 +52,7 @@ list<IP> lookup_ip(str host, Allocator& alloc, errorparam err) {
                 //print "GOT IPv4";
                 sockaddr_in *ipv4addr = (sockaddr_in *) result->ai_addr;
                 
-                IP *ip          = ips.make();
+                IP *ip          = ips.add();
                 ip->type        = IP::IPv4;
                 ip->ipv4.addr32 = ipv4addr->sin_addr.s_addr;
             } break;
@@ -59,7 +60,7 @@ list<IP> lookup_ip(str host, Allocator& alloc, errorparam err) {
                 //print "GOT IPv6";
                 sockaddr_in6 *ipv6addr = (sockaddr_in6 *) result->ai_addr;
                 
-                IP *ip        = ips.make();
+                IP *ip        = ips.add();
                 ip->type      = IP::IPv6;
                 memcpy(ip->ipv6.addr, ipv6addr->sin6_addr.s6_addr, sizeof(ip->ipv6.addr));
                 
@@ -108,17 +109,17 @@ list<Addr> lookup(str host, str service, Allocator& alloc, errorparam err) {
         
         switch (result->ai_addr->sa_family) {
             case AF_INET: {                
-                Addr *addr = addrs.make();
+                Addr *addr = addrs.add();
                 //print "got one", ntohs(((sockaddr_in*)result->ai_addr)->sin_port);
-                assert(result->ai_addrlen <= sizeof(*addr), exception::AssertionFailed, "size mismatch");
+                assert(result->ai_addrlen <= sizeof(*addr), exceptions::AssertionFailed, "size mismatch");
                 memcpy(addr, result->ai_addr, result->ai_addrlen);
                 //print addr->addr_ipv4.port.val;
                 //print offsetof(Addr, addr_ipv4.port);
                 //print offsetof(sockaddr_in, sin_port);
             } break;
             case AF_INET6: {
-                Addr *addr = addrs.make();
-                assert(result->ai_addrlen <= sizeof(*addr), exception::AssertionFailed, "size mismatch");
+                Addr *addr = addrs.add();
+                assert(result->ai_addrlen <= sizeof(*addr), exceptions::AssertionFailed, "size mismatch");
                 memcpy(addr, result->ai_addr, result->ai_addrlen);
             } break;
             default:
