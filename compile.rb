@@ -122,13 +122,13 @@ def process_h(hfile)
         process_cpp(file + ".cpp")
     end
     
-    if File::directory?(file)
-        files = Dir::glob(file + "/*.cpp")
-        for cppfile in files 
-            process_cpp(cppfile)
-        end
-        
-    end
+#     if File::directory?(file)
+#         files = Dir::glob(file + "/*.cpp")
+#         for cppfile in files 
+#             process_cpp(cppfile)
+#         end
+#         
+#     end
     
     if File::basename(hfile) == "PKG.h"
         files = Dir::glob(File::dirname(hfile) + "/*.cpp")
