@@ -1,3 +1,6 @@
 *.kate-swp
 /bin
 /obj
+/src/*
+!/src/axe
+
