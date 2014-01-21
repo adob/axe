@@ -1,3 +1,7 @@
+#include <utility>
+
+#import <axe/typedefs.h>
+#import <axe/alloc.h>
 namespace axe {
     template <typename>
     struct Node;
@@ -48,7 +52,7 @@ namespace axe {
         size               len;
         Allocator&         alloc;
         
-        List(Allocator&)
+        List(Allocator& alloc)
           : head(nullptr)
           , tail(nullptr)
           , len(0)
@@ -78,7 +82,7 @@ namespace axe {
         template <typename U, typename... Args>
         U* add(Args&&... args) {
             
-            Node<T> *node = alloc.make< Node<T> >(std::forward<Args>(args)...);
+            Node<U> *node = alloc.make< Node<U> >(std::forward<Args>(args)...);
             
             node->next = nullptr;
             
@@ -93,7 +97,9 @@ namespace axe {
             return &node->data;
         }
         
-        operator list<T> ();
+        operator list<T> () {
+            return list<T>{head, len};
+        }
         
     } ;
     

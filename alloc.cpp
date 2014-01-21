@@ -32,7 +32,7 @@ namespace axe {
             
             
         void *Region::alloc(size allocsize, unsigned alignment) {
-        //     print "Region::alloc(%s, %s)" % allocsize, alignment;
+            //print "Region::alloc(%p, %s, %s, %s)" % (void*)this, this->blocksize, allocsize, alignment;
             if (allocsize == 0) {
                 return nullptr;
             }
@@ -40,7 +40,6 @@ namespace axe {
                 BlockHeader *block = current_block;
                 while (block) {
                     byte *mem = align(block->start, alignment);
-                    
                     if (mem + allocsize <= block->end) {
                         //last_alloc_offset = align(block->offset, alignment);
                         //last_block = block;
@@ -114,6 +113,7 @@ namespace axe {
         //     this->max_alloc_size         = std::min(usable_size, MaxAllocSize);
             
             byte *mem = (byte*) memalign(alignof(BlockHeader), blocksize);
+            //printf("NEW BLOCK at %p\n", mem);
             if (mem == nullptr) {
                 return nullptr;
             }
@@ -212,7 +212,7 @@ namespace axe {
     } // namespace memory
 
     Allocator::Allocator(size sz) : region(sz) {
-        //print "Allocator";
+        //print "Allocator %p %s" % this, region.blocksize;
     }
 
     bufref Allocator::operator () (size n) {

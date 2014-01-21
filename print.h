@@ -18,13 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <axe/str.h>
+#import <axe/str.h>
+#import <axe/alloc.h>
 
 
 // extern "C" {
@@ -759,7 +759,6 @@ struct Print : PrintUndecided
     
     template <typename T>
     PrintUnformatted& operator * (T const& t) {
-
         Write(file, t, false);
         return *this;
     }

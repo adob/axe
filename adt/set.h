@@ -1,6 +1,6 @@
 #include <unordered_set>
 
-#import "hash.h"
+#import <axe/hash/hash.h>
 
 namespace axe {
     

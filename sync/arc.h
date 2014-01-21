@@ -1,7 +1,10 @@
 #include <string>
 #include <memory>
+#import <axe/typedefs.h>
+#import <axe/str.h>
+#import <axe/alloc.h>
+#import <axe/buffer.h>
 
-#import <axe/core.h>
 
 namespace axe {
     namespace sync {

@@ -1,4 +1,5 @@
 #include <utility>
+#import "typedefs.h"
 #import "str.h"
 namespace axe {
 
@@ -69,7 +70,7 @@ namespace axe {
         memory::Region region;
         
         Allocator(size sz=512);
-        Allocator(Allocator const&) = delete;
+        Allocator(Allocator &&) = delete;
         
         template<typename T>
         AllocatorRef<T> allocator() {
@@ -90,5 +91,30 @@ namespace axe {
         bufref copy_c_str(const char *charp);
     };
 
-    #include "alloc.inlines.h"
+    //
+    // Inline definitions
+    //
+    
+    template <typename T, typename... Args>
+    T* Allocator::make(Args&&... args) {
+        //printf("Allocator::make %p %d\n", this, region.blocksize);
+        T *t = (T*) region.alloc(sizeof(T), alignof(T));
+        new (t) T(std::forward<Args>(args)...);
+        return t;
+    }
+    
+    template <typename T, typename... Args>
+    T* Allocator::make_many(size count, Args&&... args) {
+        T *first = (T*) region.alloc(sizeof(T) * count, alignof(T));
+        T *curr = first;
+        T *last = first+count;
+        
+        while (curr != last) {
+            new (curr) T(std::forward<Args>(args)...);
+            curr++;
+        }
+        
+        return first;
+    }
+    
 }

@@ -1,8 +1,8 @@
-#pragma once
 #include <new>
 #include <type_traits>
 #include <utility>
 #include <stdlib.h>
+#include <stdio.h>
 
 #import <axe/typedefs.h>
 
@@ -81,8 +81,8 @@ namespace axe {
         size buffer[7];
         
         Func()
-        : funcp(nullptr)
-        {}
+          : funcp(nullptr)
+          {}
         
         Func(Func<Ret(Args...)> const&) { 
             throw "Unimplemented"; 
@@ -100,9 +100,10 @@ namespace axe {
         
         template <typename Functor>
         Func(Functor&& functor) {
-            if (sizeof(functor) <= sizeof(buffer) && alignof(functor) <= alignof(buffer)) {
+            if (sizeof(functor) <= sizeof(buffer) && alignof(Functor) <= alignof(decltype(buffer))) {
                 funcp = (internal::FuncIFace<Ret, Args...> *) buffer;
             } else {
+                printf("alignof in funch.h\n");
                 funcp = (internal::FuncIFace<Ret, Args...> *) malloc(sizeof(functor));
             }
             
@@ -113,7 +114,7 @@ namespace axe {
             return (*funcp)(std::forward<Args>(args)...);
         }
         
-        Func& operator = (nullptr_t) {
+        Func& operator = (std::nullptr_t) {
             if (funcp) {
                 funcp->~FuncIFace();
                 

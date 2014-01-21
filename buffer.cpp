@@ -1,6 +1,9 @@
 #import "buffer.h"
-#import <axe/utf8/utf8.h>
+#import <axe/unicode/utf8/utf8.h>
+#import <axe/unicode/utf8/encode.h>
 namespace axe {
+    namespace utf8 = unicode::utf8;
+    
     void Str::append(rune r) {
         ensure(utf8::UTFMax);
         len += axe::len(utf8::encode(r, buf(len)));

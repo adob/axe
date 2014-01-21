@@ -1,11 +1,11 @@
 #include <unordered_map>
 
-#import "hash.h"
+#import <axe/hash/hash.h>
 
 namespace axe {
     
     template <typename Key, typename Value>
-    struct Map : std::unordered_map<Key, Value, Hash> {
+    struct Map : std::unordered_map<Key, Value, axe::Hash> {
         
     } ;
 }

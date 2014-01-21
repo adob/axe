@@ -1,4 +1,5 @@
-#import "alloc.h"
+#include <cstddef>
+#import "typedefs.h"
 namespace axe {
     struct Allocator;
     struct error {
@@ -38,7 +39,7 @@ namespace axe {
             type = FuncErr;
         }
         
-        error& operator = (nullptr_t) { charp = 0; return *this; }
+        error& operator = (std::nullptr_t) { charp = 0; return *this; }
         error& operator = (error other) { charp = other.charp; return *this; }
         
         constexpr explicit operator bool () const    { return charp != 0; }
@@ -49,9 +50,9 @@ namespace axe {
 
     };
     
-    inline bool operator == (error e, nullptr_t) { return e.charp == 0; }
-    inline bool operator == (nullptr_t, error e) { return e.charp == 0; }
-    inline bool operator != (error e, nullptr_t) { return e.charp != 0; }
-    inline bool operator != (nullptr_t, error e) { return e.charp != 0; }
+    inline bool operator == (error e, std::nullptr_t) { return e.charp == 0; }
+    inline bool operator == (std::nullptr_t, error e) { return e.charp == 0; }
+    inline bool operator != (error e, std::nullptr_t) { return e.charp != 0; }
+    inline bool operator != (std::nullptr_t, error e) { return e.charp != 0; }
 
 }

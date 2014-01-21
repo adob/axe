@@ -1,3 +1,5 @@
+#import <axe/typedefs.h>
+#import <axe/alloc.h>
 namespace axe {
     template <typename T>
     struct Vector {
@@ -37,7 +39,7 @@ namespace axe {
     } ;
     
     template <typename T>
-    size len(Vector<T> const&)  {
+    size len(Vector<T> const& vec) {
         return vec.len;
     }
     

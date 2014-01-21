@@ -148,6 +148,14 @@
 #include <algorithm>
 #include <string.h>  // for memcpy and memset
 
+#ifdef __SSE4_2__
+#include <citycrc.h>
+#include <nmmintrin.h>
+#endif
+
+namespace axe {
+namespace hashing {
+
 using namespace std;
 
 static uint64 UNALIGNED_LOAD64(const char *p) {
@@ -759,3 +767,5 @@ uint128 CityHashCrc128(const char *s, size_t len) {
 }
 
 #endif
+}
+}

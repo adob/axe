@@ -1,6 +1,7 @@
-#import <axe/io/io.h>
 #import <axe/adt/array.h>
-#import <axe/utf8/utf8.h>
+#import <axe/unicode/utf8.h>
+#import <axe/buffer.h>
+#import <axe/io/write.h>
 #import "quote.h"
 #ifdef __GXX_RTTI
 #include <typeinfo>

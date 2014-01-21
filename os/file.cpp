@@ -5,7 +5,7 @@
 #include <errno.h>
        
 #include "file.h"
-#include "print.h"
+#include <axe/print.h>
 
 namespace axe {
 namespace os {
@@ -20,7 +20,7 @@ File create(const char *name, int flag, mode_t perm) {
 }
 
 void File::init(int fd, str name) {
-    this->err  = OK;
+    this->err  = nil;
     this->fd   = fd;
     this->name = name;
 }
@@ -85,7 +85,7 @@ File open(const char *name, int flag, mode_t perm) {
         return file;
     }
     file.init(r, name);
-    file.err = OK;
+    file.err = nil;
     return file;
 }
 

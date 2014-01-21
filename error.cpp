@@ -73,7 +73,7 @@ void raise(str msg) {
 }
 
 void raise(const char* strp) {
-    raise(strp);
+    raise(str(strp));
 }
 
 void raise(int err) {

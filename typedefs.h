@@ -3,6 +3,9 @@
 
 namespace axe {
     
+    using uint    = unsigned int;
+    using ushort  = unsigned short;
+    using ulong   = unsigned long;
     using size    = intptr_t;
     using usize   = size_t;
     using byte    = uint8_t;

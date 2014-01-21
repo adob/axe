@@ -1,5 +1,7 @@
 #import "mutex.h"
 #import <axe/raise.h>
+//#import <axe/print.h>
+//#import <axe/debug/debug.h>
 
 namespace axe {
     namespace sync {
@@ -30,10 +32,15 @@ namespace axe {
                 raise(code);
             }
 
-            pthread_mutexattr_destroy(&attr);
+            if (int code = pthread_mutexattr_destroy(&attr)) {
+                raise(code);
+            }
+            //print "create";
         }
 
         void Mutex::lock() {
+            //print "lock";
+            //debug::print_backtrace();
             if (int code = pthread_mutex_lock(&mutex)) {
                 raise(code);
             }
@@ -41,12 +48,14 @@ namespace axe {
         }
 
         void Mutex::unlock() {
+            //print "unlock";
             if (int code = pthread_mutex_unlock(&mutex)) {
                 raise(code);
             }
         }
             
         Mutex::~Mutex() {
+            //print "destroy";
             if (int code = pthread_mutex_destroy(&mutex)) {
                 raise(code);
             }

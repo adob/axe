@@ -1,13 +1,17 @@
 #include <type_traits>
-#import <axe/core.h>
+
 #import "city.h"
+
+#import <axe/str.h>
+#import <axe/buffer.h>
+
 
 namespace axe {
     
     static_assert(sizeof(uintptr) == 8, "size mismatch");
     
     inline uintptr hash(const char *data, size len) {
-        return CityHash64(data, len);
+        return hashing::CityHash64(data, len);
     }
     
     inline uintptr hash(str s) {
@@ -15,7 +19,7 @@ namespace axe {
     }
     
     inline uintptr hash(void *ptr) {
-        return CityHash64((const char *)&ptr, sizeof ptr);
+        return hashing::CityHash64((const char *)&ptr, sizeof ptr);
     }
     
     struct Hash {

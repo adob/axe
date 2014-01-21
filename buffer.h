@@ -1,4 +1,5 @@
 #import "str.h"
+#import "alloc.h"
 namespace axe {
     struct Str {
         bufref     buf;
@@ -89,7 +90,8 @@ namespace axe {
         size cap;
         
         Buffer() : data(nullptr), len(0), cap(0) {}
-        Buffer(usize len, size cap) : data((byte*)malloc(cap)), len(len), cap(cap) {}
+        Buffer(size len, size cap) : data((byte*)malloc(cap)), len(len), cap(cap) {}
+        Buffer(size len) : data((byte*)malloc(len)), len(len), cap(len) {}
         Buffer(Buffer&& other) : data(other.data), len(other.len), cap(other.cap) {
             other.data = nullptr;
         }
@@ -98,39 +100,69 @@ namespace axe {
             data = (byte *) malloc(s.len);
             len  = s.len;
             cap  = s.len;
-            memcpy(data, s.data, len);
+            memmove(data, s.data, len);
+        }
+        
+        Buffer(const char *strp) {
+            size slen = strlen(strp);
+            data = (byte *) malloc(slen);
+            len  = slen;
+            cap  = slen;
+            memmove(data, strp, len);
         }
         
         template <size N>
         Buffer(const char (&arr)[N]) : data((byte*)malloc(N-1)), len(N-1), cap(N-1) {
-            memcpy(data, arr, N-1);
+            memmove(data, arr, N-1);
         }
         
         void ensure(usize newsize) {
-            if (len + newsize > cap) {
-                cap = std::min((size)newsize, cap*2);
+            if (newsize > cap) {
+                cap = std::max((size)newsize, std::max(cap*2, (size)16));
                 data = (byte*) realloc(data, cap);
             }
         }
         
         void append(str s) {
-            ensure(s.len);
+            ensure(len + s.len);
             memmove(data + len, s.data, s.len);
             len += s.len;
         }
         
+        Buffer& operator += (str s) {
+            append(s);
+            return *this;
+        }
+        
+        size write(str s) {
+            append(s);
+            return axe::len(s);
+        }
+        
         void append(char c) {
-            ensure(1);
+            ensure(len + 1);
             data[len] = c;
             len += 1;
+        }
+        Buffer& operator += (char c) {
+            append(c);
+            return *this;
         }
         void append(byte b) {
             append((char) b);
         }
+        Buffer& operator += (byte b) {
+            append(b);
+            return *this;
+        }
         void append(rune r);
+        Buffer& operator += (rune r) {
+            append(r);
+            return *this;
+        }
         
         void append_many(str s, usize count)  {
-            ensure(s.len * count);
+            ensure(len + s.len * count);
             for (size i = 0; i < count; i++) {
                 memmove(data + len, s.data, s.len);
                 len += s.len;
@@ -140,7 +172,7 @@ namespace axe {
             append_many((char) b, count);
         }
         void append_many(char c, usize count) {
-            ensure(count);
+            ensure(len + count);
             memset(data + len, c, count);
             len += count;
         }
@@ -154,6 +186,22 @@ namespace axe {
             Str s(alloc);
             s.append(str(data, len));
             return s;
+        }
+        
+        Buffer& operator = (const char *strp) {
+            len = strlen(strp);
+            ensure(len);
+            
+            memmove(data, strp, len);
+            return *this;
+        }
+        
+        Buffer& operator = (str s) {
+            ensure(s.len);
+            
+            memmove(data, s.data, s.len);
+            len = s.len;
+            return *this;
         }
         
         Buffer& operator = (Buffer&& other) {

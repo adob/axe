@@ -1,8 +1,8 @@
 #include <utility>
 #include <tuple>
 
-#import <axe/utf8/PKG.h>
-#import <axe/strings/PKG.h>
+#import <axe/unicode/utf8.h>
+#import <axe/strings.h>
 #import "PKG.h"
 
 using namespace std;

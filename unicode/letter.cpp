@@ -1,4 +1,5 @@
 #import "unicode.h"
+#import "tables.h"
 
 namespace axe { 
     namespace unicode { 

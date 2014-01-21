@@ -1,5 +1,5 @@
 #import <axe/buffer.h>
-#import <axe/utf8.h>
+#import <axe/unicode/utf8.h>
 #import <axe/adt/array.h>
 #import "quote.h"
 #include "isprint.h"
@@ -7,7 +7,6 @@
 
 namespace axe {
     namespace fmt {
-
         constexpr str lowerhex("0123456789abcdef");
             
         str quote_with(str s, char quote, bool ascii_only , Allocator& alloc) {
@@ -117,7 +116,7 @@ namespace axe {
             
             if (r < (1<<16)) {
                 size i = bsearch(IsPrint16, r);
-                if (i > len(IsPrint16) || r < IsPrint16[i & ~1] || IsPrint16[i|1] < r) {
+                if (i >= len(IsPrint16) || r < IsPrint16[i & ~1] || IsPrint16[i|1] < r) {
                     return false;
                 }
                 size j = bsearch(IsNotPrint16, r);
@@ -125,7 +124,7 @@ namespace axe {
             }
             
             size i = bsearch(IsPrint32, r);
-            if (i > len(IsPrint32) || r < IsPrint32[i & ~1] || IsPrint32[i|1] < r) {
+            if (i >= len(IsPrint32) || r < IsPrint32[i & ~1] || IsPrint32[i|1] < r) {
                 return false;
             }
             if (r >= 0x20000) {

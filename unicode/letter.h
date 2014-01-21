@@ -1,3 +1,5 @@
+#import <axe/typedefs.h>
+#import "tables.h"
 namespace axe { 
     namespace unicode {
         

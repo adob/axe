@@ -11,7 +11,7 @@ namespace axe {
         
         const int MaxThreads   = 100000;
         
-        Queue<functype> work_queue(MaxQueueSize) ;
+        Queue<functype> *work_queue;
         
         struct PThreadAttr {
             pthread_attr_t attr;
@@ -90,7 +90,7 @@ namespace axe {
                     //    print "WorkItem threw some exception";
                 //}
                 workitem = nil;
-                workitem = work_queue.dequeue();
+                workitem = work_queue->dequeue();
             }
                     
                     
@@ -100,7 +100,7 @@ namespace axe {
         void *sched_thread_func(void *) {
             //print "sched_thread started";
             while (true) {
-                functype item = work_queue.dequeue();
+                functype item = work_queue->dequeue();
                 //print "sched_thread got item from workque";
                 
                 WorkerThreadInfo info(item);
@@ -125,6 +125,8 @@ namespace axe {
             int num_cpus;
             pid_t mytid;
             
+            work_queue = new Queue<functype>(MaxQueueSize);
+            
             mytid = syscall(SYS_gettid);
             cpu_set_t cpuset;
             CPU_ZERO(&cpuset);
@@ -147,10 +149,10 @@ namespace axe {
         }
         
         void go(Func<void()> const& f) {
-            work_queue.enqueue(f);
+            work_queue->enqueue(f);
         }
         void go(Func<void()> && f) {
-            work_queue.enqueue(std::move(f));
+            work_queue->enqueue(std::move(f));
         }
     }
 }

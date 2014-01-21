@@ -11,10 +11,10 @@ namespace axe {
         constexpr array(T *t, usize len) : arr(t), len(len) {}
         
         template <size N> 
-        constexpr array(T (&)[N])  : arr(arr), len(N) { }
+        constexpr array(T (&arr)[N])  : arr(arr), len(N) { }
         
         template <size N> 
-        constexpr array(T (&&)[N]) : arr(arr), len(N) { }
+        constexpr array(T (&&arr)[N]) : arr(arr), len(N) { }
         
         array slice(usize i) const {
             return assert(i <= len, exceptions::BadIndex, i, len),

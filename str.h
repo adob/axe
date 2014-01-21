@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <vector>
+#include <type_traits>
 #import "typedefs.h"
 #import "assert.h"
 #import "exceptions.h"
@@ -70,20 +71,29 @@ struct Backtrace {
         operator const char * ();
         ~TempCStr();
     } ;
+    
+//     namespace internal {
+//         template <typename T>
+//         struct ConvHelper {
+//             
+//         }
+//     }
 
     struct strref {
         const char * data;
         size         len;
         
         constexpr strref() : data(nullptr), len(0) {}
-        constexpr strref(const char *s) : data(s), len(s != nullptr ? __builtin_strlen(s) : 0) {}
+        
+        constexpr strref(const void *s) : data((const char *)s), len(s != nullptr ? __builtin_strlen((const char *)s) : 0) {}
+        
         strref(std::string const& s) : data(s.data()), len(s.size()) {}
         strref(std::string&&) = delete;
         constexpr strref(std::nullptr_t) : data(nullptr), len(0) {}
         constexpr strref(const char *str, size strlen) : data(str), len(strlen) {}
         constexpr strref(const byte *str, size strlen) : data((char*)str), len(strlen) {}
-        template <size N> constexpr strref(const char (&str)[N]) : data(str), len(N-1){}
-        template <size N> constexpr strref(const uint8 (&bytes)[N]) : data((char*)bytes), len(N) { }
+        template <size_t N> constexpr strref(const char (&str)[N]) : data(str), len(N-1){}
+        template <size_t N> constexpr strref(const uint8 (&bytes)[N]) : data((char*)bytes), len(N) { }
         
         TempCStr tmp_c_str();
         
@@ -134,6 +144,13 @@ struct Backtrace {
     }
     constexpr bool operator == (std::nullptr_t, strref right) {
         return right.data == nullptr;
+    }
+    
+    constexpr bool operator != (strref left, std::nullptr_t) {
+        return left.data != nullptr;
+    }
+    constexpr bool operator != (std::nullptr_t, strref right) {
+        return right.data != nullptr;
     }
 
     struct bufref {
