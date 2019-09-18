@@ -5,13 +5,13 @@ SRCDIR = "src"
 BINDIR = "bin"
 INCPATH = "-Isrc"
 
-CC      = "g++-4.8"
+CC      = "g++-7"
 
 ROOT   = File::dirname($0)
 
 
 module Base 
-    CCFLAGS = ["-std=c++1y", "-pthread", "-fnon-call-exceptions", "-g" ,
+    CCFLAGS = ["-std=c++1z", "-pthread", "-fnon-call-exceptions", "-g" ,
                "-Wall", "-Wextra", "-Wno-sign-compare", "-Wno-deprecated"]
     LFLAGS  = ["-lrt", "-ldwarf", "-lelf"]
     
@@ -168,7 +168,6 @@ def process_cpp(cppfile)
         @processed_files.add(cppfile)
     end
     
-#     puts "  >> process cpp #{cppfile}"
     file = strip_suffix(cppfile.sub(SRCDIR+"/", ''))
     objfile = "#{OBJDIR}/#{file}.o"
     #cppfile = "#{SRCDIR}/#{file}"

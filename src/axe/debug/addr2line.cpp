@@ -26,12 +26,12 @@
 
 #include <sys/cdefs.h>
 #include <sys/param.h>
-#include <dwarf.h>
+#include <libdwarf/dwarf.h>
 #include <err.h>
 #include <fcntl.h>
 #include <gelf.h>
 #include <getopt.h>
-#include <libdwarf.h>
+#include <libdwarf/libdwarf.h>
 //#include <libelftc.h>
 #include <libgen.h>
 #include <stdio.h>
@@ -80,6 +80,7 @@ int dwarf_attrval_addr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Addr *addrp, Dwarf_
     case DW_FORM_ref8:
     case DW_FORM_ref_udata:
         print "got ref udata";
+        [[fallthrough]];
     case DW_FORM_addr: {
         if ((ret = dwarf_formaddr(at, addrp, err)))
             return ret;

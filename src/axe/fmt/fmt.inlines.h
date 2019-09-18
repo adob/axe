@@ -398,11 +398,13 @@ namespace axe {
                         switch (c) {
                             case 'X': 
                                 out.upcase = true;
+                                [[fallthrough]];
                             case 'x':
                                 out.base = 16;
                                 break;
                             case 'O':
                                 out.upcase = true;
+                                [[fallthrough]];
                             case 'o':
                                 out.base = 8;
                                 break;
@@ -415,7 +417,6 @@ namespace axe {
                             case 't':
                                 out.type = true;
                                 break;
-                                
                             case ',':
                                 out.comma = true;
                                 continue;
@@ -467,6 +468,7 @@ namespace axe {
                                     out.zero = true; 
                                     continue;
                                 }
+                                [[fallthrough]];
                             default: 
                                 if ('0' <= c && c <= '9') {
                                     if (state == 0)
