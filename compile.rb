@@ -5,7 +5,7 @@ SRCDIR = "src"
 BINDIR = "bin"
 INCPATH = "-Isrc"
 
-CC      = "g++-7"
+CC      = "g++-10"
 
 ROOT   = File::dirname($0)
 
