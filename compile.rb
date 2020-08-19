@@ -141,7 +141,8 @@ end
 def build_deps(cppfile)
     file = strip_suffix(cppfile.sub(SRCDIR+"/", ''))
     depfile = DEPDIR + "/" + file + ".dep"
-    shell(CC, "-MM", "-MT"+cppfile, *CCFLAGS, *INCPATH, cppfile, ">", depfile)
+    depfile_content = shell(CC, "-MM", "-MT"+cppfile, *CCFLAGS, *INCPATH, cppfile)
+    IO.write(depfile, depfile_content)
 end
 
 def get_makefile_rules(cppfile)
@@ -153,7 +154,7 @@ def get_makefile_rules(cppfile)
         if not File::exists?(dir)
             FileUtils::mkdir_p(dir)
         end
-        shell(CC, "-MM", "-MT"+cppfile, *CCFLAGS, *INCPATH, cppfile, ">", depfile)
+        build_deps(cppfile)
     end
     
     rules = parse_makefile_rules(IO::read(depfile))
