@@ -40,7 +40,7 @@ namespace axe {
         }
         
         error& operator = (std::nullptr_t) { charp = 0; return *this; }
-        error& operator = (error other) { charp = other.charp; return *this; }
+        //error& operator = (error other) { charp = other.charp; return *this; }
         
         constexpr explicit operator bool () const    { return charp != 0; }
         constexpr bool operator ==   (error rhs) { return charp == rhs.charp; }

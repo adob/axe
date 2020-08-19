@@ -77,7 +77,7 @@ namespace axe {
                 size len = siter-begin(s);
                 memcpy(begin(b), begin(s), len);
                 
-                char *biter = begin(b) + len;
+                byte *biter = begin(b) + len;
                 for (; siter != send; ++siter, ++biter) {
                     *biter = tolower(*siter);
                 }

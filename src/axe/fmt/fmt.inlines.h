@@ -307,6 +307,7 @@ namespace axe {
                 
             } ;
             
+
             
             
             template <size N, typename... Args> struct PrinterT;
@@ -325,13 +326,14 @@ namespace axe {
                             out.write(arg);
                         return true;
                     }
-                    return static_cast<PrinterT<N+1, Args...>>(*this).doprint(n, out);
+                    return PrinterT<N+1, Args...>::doprint(n, out);
                 }
-                
+
                 size getsize() {
-                    return static_cast<PrinterT<N+1, Args...>>(*this).getsize();
+                    return PrinterT<N+1, Args...>::getsize();
                 }
-                
+
+
                 size touint(int n, PrettyPrinter&) {
                     return n;
                 }
@@ -348,8 +350,10 @@ namespace axe {
                     if (n == N) {
                         return touint(arg, out);
                     }
-                    return static_cast<PrinterT<N+1, Args...>>(*this).getuint(n, out);
+                    return PrinterT<N+1, Args...>::getuint(n, out);
                 }
+                
+
             } ;
             
             template <size N>
@@ -366,10 +370,10 @@ namespace axe {
                     out.write("<missing int arg>");
                     return 0;
                 }
-                
+
                 size getsize() { return N; }
             } ;
-                    
+
             template <typename... Args>
             str sprintf(Allocator& alloc, str format, const Args &... args) {
                 PrinterT<0, Args...> printer(args...);

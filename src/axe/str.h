@@ -91,7 +91,7 @@ struct Backtrace {
         strref(std::string&&) = delete;
         constexpr strref(std::nullptr_t) : data(nullptr), len(0) {}
         constexpr strref(const char *str, size strlen) : data(str), len(strlen) {}
-        constexpr strref(const byte *str, size strlen) : data((char*)str), len(strlen) {}
+        constexpr strref(const byte *str, size strlen) : data(&reinterpret_cast<const char&>(*str)), len(strlen) {}
         template <size_t N> constexpr strref(const char (&str)[N]) : data(str), len(N-1){}
         template <size_t N> constexpr strref(const uint8 (&bytes)[N]) : data((char*)bytes), len(N) { }
         
@@ -158,7 +158,7 @@ struct Backtrace {
         size   len;
         
         constexpr bufref()                     : data(0), len(0) {}
-        constexpr bufref(char *data, usize len) : data((byte*)data), len(len) {}
+        constexpr bufref(char *data, usize len) : data(&reinterpret_cast<byte&>(*data)), len(len) {}
         constexpr bufref(byte *data, usize len) : data(data), len(len) {}
         template <size N> constexpr bufref(char (&str)[N]) : data((byte*)str), len(N) {}
         template <size N> constexpr bufref(uint8 (&bytes)[N]) : data(bytes), len(N) {}
@@ -199,7 +199,7 @@ struct Backtrace {
         }
         
         constexpr operator strref () const {
-            return strref((char*)data, len);
+            return strref(data, len);
         }
         
         bufref& operator ++ () {
@@ -228,8 +228,8 @@ struct Backtrace {
     //     return memcmp(left.data, right.data, left.len) == 0;
     // }
 
-    constexpr char *begin(bufref b)             { return (char*) b.data; }
-    constexpr char *end(bufref b)               { return (char*) (b.data+b.len); }
+    constexpr byte *begin(bufref b)             { return b.data; }
+    constexpr byte *end(bufref b)               { return (b.data+b.len); }
     constexpr size  len(bufref b)               { return b.len; }
 
     inline size copy(bufref dst, strref src) {
