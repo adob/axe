@@ -141,6 +141,7 @@ end
 def build_deps(cppfile)
     file = strip_suffix(cppfile.sub(SRCDIR+"/", ''))
     depfile = DEPDIR + "/" + file + ".dep"
+    print("DEPS:\t")
     depfile_content = shell(CC, "-MM", "-MT"+cppfile, *CCFLAGS, *INCPATH, cppfile)
     IO.write(depfile, depfile_content)
 end
@@ -186,8 +187,7 @@ def process_cpp(cppfile)
             process_file(rule)
         end
         currmtime = mtime(rule)
-        if (currmtime > buildtime) 
-            #puts "need to build #{cppfile} due to #{rule}"
+        if currmtime > buildtime
             need_update = true
         end
         #puts "rules #{rule}"
@@ -195,7 +195,9 @@ def process_cpp(cppfile)
     
     @objs << cpp2obj(cppfile)
     if need_update
-        build_deps(cppfile)
+        if buildtime != Time::new(0)
+            build_deps(cppfile)
+        end
         build_cpp(cppfile)
         return true
     end
