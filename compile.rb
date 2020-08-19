@@ -181,21 +181,29 @@ def process_cpp(cppfile)
         @last_mtime = buildtime
     end
     need_update = false
+    need_deps = false
     
+    #puts "cppfile #{cppfile}"
+    #puts "buildtime #{buildtime}"
     for rule in rules
         if rule != cppfile
             process_file(rule)
         end
         currmtime = mtime(rule)
-        if currmtime > buildtime
+        #puts "mtime #{rule} #{currmtime}"
+        if currmtime > buildtime 
+            puts "need to build #{cppfile} due to #{rule}"
             need_update = true
+            if not need_deps and rule != cppfile
+                need_deps = true
+            end
         end
         #puts "rules #{rule}"
     end
     
     @objs << cpp2obj(cppfile)
     if need_update
-        if buildtime != Time::new(0)
+        if need_deps and buildtime != Time::new(0)
             build_deps(cppfile)
         end
         build_cpp(cppfile)
